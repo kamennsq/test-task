@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import java.sql.Date;
 import java.time.Instant;
 
 @Entity
@@ -16,14 +17,14 @@ public class Prescription extends ParentEntity {
 
     @JoinColumn(name = "Patient")
     @ManyToOne
-    private Patient patient;
+    private Long patient;
 
     @JoinColumn(name = "Doctor")
     @ManyToOne
-    private Doctor doctor;
+    private Long doctor;
 
     @Column(name = "CreationDate")
-    private Instant date;
+    private Date date;
 
     @Column(name = "ExpirationPeriod")
     private Integer period;
@@ -35,15 +36,15 @@ public class Prescription extends ParentEntity {
         this.description = description;
     }
 
-    public void setPatient(Patient patient) {
+    public void setPatient(Long patient) {
         this.patient = patient;
     }
 
-    public void setDoctor(Doctor doctor) {
+    public void setDoctor(Long doctor) {
         this.doctor = doctor;
     }
 
-    public void setDate(Instant date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
@@ -63,15 +64,15 @@ public class Prescription extends ParentEntity {
         return period;
     }
 
-    public Patient getPatient() {
+    public Long getPatient() {
         return patient;
     }
 
-    public Doctor getDoctor() {
+    public Long getDoctor() {
         return doctor;
     }
 
-    public Instant getDate() {
+    public Date getDate() {
         return date;
     }
 

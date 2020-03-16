@@ -22,17 +22,35 @@ public class MyConnection {
         if (connection == null) {
             try {
                 Class.forName("org.hsqldb.jdbc.JDBCDriver");
-                connection = DriverManager.getConnection("jdbc:hsqldb:file:testdb", "SA", "");
-                connection.createStatement().executeUpdate("create table SYSTEM_LOBS.PATIENT (ID BIGINT NOT NULL, " +
+                connection = DriverManager.getConnection("jdbc:hsqldb:mem:mymemdb", "SA", "");
+                connection.createStatement().executeUpdate("create table if not exists Patient (ID BIGINT NOT NULL, " +
                         "Name VARCHAR(10) NOT NULL, " +
                         "Surname VARCHAR(10) NOT NULL, " +
                         "Patronymic VARCHAR(20) NOT NULL, " +
                         "PhoneNumber VARCHAR(10) NOT NULL, " +
                         "PRIMARY KEY(ID))");
+                connection.createStatement().executeUpdate("create table if not exists Doctor (ID BIGINT NOT NULL, " +
+                        "Name VARCHAR(10) NOT NULL, " +
+                        "Surname VARCHAR(10) NOT NULL, " +
+                        "Patronymic VARCHAR(20) NOT NULL, " +
+                        "Specialization VARCHAR(20) NOT NULL, " +
+                        "PRIMARY KEY(ID))");
+                connection.createStatement().executeUpdate("create table if not exists Prescription (ID BIGINT NOT NULL, " +
+                        "Description VARCHAR(50) NOT NULL, " +
+                        "Patient BIGINT NOT NULL, " +
+                        "Doctor BIGINT NOT NULL, " +
+                        "Priority VARCHAR(10) NOT NULL, " +
+                        "CreationDate DATE NOT NULL, " +
+                        "ExpirationPeriod INTEGER NOT NULL, " +
+                        "PRIMARY KEY(ID))");
+                connection.createStatement().executeUpdate("insert into Patient values (1, 'Peter', 'Smith', 'None', '4545454')");
+                connection.createStatement().executeUpdate("insert into Doctor values (1, 'Ivan', 'Post', 'None', 'Surgeon')");
+                connection.createStatement().executeUpdate("insert into Prescription values (1, 'To kill the pain', 1, 1, 'NORMAL', sysdate, 12)");
                 connection.createStatement().execute("CHECKPOINT");
             }
             catch (SQLException e) {
                 System.out.println("Unable to get connection");
+                //e.printStackTrace();
             }
             catch (ClassNotFoundException e){
                 System.out.println("Driver was not found");
@@ -44,7 +62,7 @@ public class MyConnection {
     public void closeConnection(){
         if (connection != null) {
             try {
-
+                connection.createStatement().execute("SHUTDOWN");
                 connection.close();
             } catch (SQLException e) {
                 System.out.println("Unable to close connection");

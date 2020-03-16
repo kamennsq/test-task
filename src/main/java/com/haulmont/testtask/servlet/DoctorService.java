@@ -1,26 +1,22 @@
-package com.haulmont.testtask;
+package com.haulmont.testtask.servlet;
 
+import com.haulmont.testtask.MainUI;
 import com.haulmont.testtask.dao.DoctorDAO;
 import com.haulmont.testtask.dao.PatientDAO;
 import com.haulmont.testtask.dao.PrescriptionDAO;
-import com.haulmont.testtask.dao.connection.MyConnection;
 import com.haulmont.testtask.dao.impl.DoctorDAOImpl;
 import com.haulmont.testtask.dao.impl.PatientDAOImpl;
 import com.haulmont.testtask.dao.impl.PrescriptionDAOImpl;
 import com.haulmont.testtask.entity.Doctor;
-import com.haulmont.testtask.entity.Patient;
-import com.haulmont.testtask.exception.PatientNotFound;
-import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
 
-@Theme(ValoTheme.THEME_NAME)
-public class MainUI extends UI {
+public class DoctorService extends UI {
 
     @Override
-    protected void init(VaadinRequest request) {
-        MyConnection connection = new MyConnection();
+    protected void init(VaadinRequest vaadinRequest) {
 
         PatientDAO patientDAO = new PatientDAOImpl();
         DoctorDAO doctorDAO = new DoctorDAOImpl();
