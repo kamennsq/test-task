@@ -53,4 +53,27 @@ public class PatientDAOImpl implements PatientDAO {
             throw new ImpossibleToInsertPatient();
         }
     }
+
+    @Override
+    public Patient getPatientById(Long id) {
+        try {
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Patient a where id = ?");
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            Patient patient = new Patient();
+            while (rs.next()) {
+                patient.setId(rs.getLong("ID"));
+                patient.setName(rs.getString("Name"));
+                patient.setSurname(rs.getString("Surname"));
+                patient.setPatronymic(rs.getString("Patronymic"));
+                patient.setPhoneNumber(rs.getString("PhoneNumber"));
+            }
+            return patient;
+        } catch (SQLException e) {
+            //e.printStackTrace();
+            throw new PatientNotFound();
+            //return null;
+        }
+    }
 }

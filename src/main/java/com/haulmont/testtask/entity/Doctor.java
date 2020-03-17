@@ -2,22 +2,14 @@ package com.haulmont.testtask.entity;
 
 import com.haulmont.testtask.entity.parent.ParentEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-
-@Entity
 public class Doctor extends ParentEntity {
 
-    @Column(name = "Name")
     private String name;
 
-    @Column(name = "Surname")
     private String surname;
 
-    @Column(name = "Specialization")
     private String specialization;
 
-    @Column(name = "Patronymic")
     private String patronymic;
 
     public void setName(String name) {

@@ -8,4 +8,6 @@ public interface PatientDAO {
 
     void insertPatient(Patient patient);
 
+    Patient getPatientById(Long id);
+
 }

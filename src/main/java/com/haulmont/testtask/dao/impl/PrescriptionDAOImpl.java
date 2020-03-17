@@ -1,5 +1,7 @@
 package com.haulmont.testtask.dao.impl;
 
+import com.haulmont.testtask.dao.DoctorDAO;
+import com.haulmont.testtask.dao.PatientDAO;
 import com.haulmont.testtask.dao.PrescriptionDAO;
 import com.haulmont.testtask.dao.connection.MyConnection;
 import com.haulmont.testtask.entity.Prescription;
@@ -13,6 +15,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
 
     @Override
     public Prescription getPrescriptionById(Long id) {
+        DoctorDAO doctorDAO = new DoctorDAOImpl();
+        PatientDAO patientDAO = new PatientDAOImpl();
         try{
             PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Id = ?");
             ps.setLong(1, id);
@@ -22,11 +26,13 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             while (rs.next()){
                 prescription.setId(rs.getLong("id"));
                 prescription.setDescription(rs.getString("Description"));
-                prescription.setPatient(rs.getLong("Patient"));
-                prescription.setDoctor(rs.getLong("Doctor"));
+                prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
+                prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
                 prescription.setDate(rs.getDate("CreationDate"));
                 prescription.setPeriod(rs.getInt("ExpirationPeriod"));
                 prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
+                prescription.setDoctorFullName();
+                prescription.setPatientFullName();
             }
             return prescription;
         }

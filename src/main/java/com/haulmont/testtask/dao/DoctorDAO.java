@@ -2,10 +2,15 @@ package com.haulmont.testtask.dao;
 
 import com.haulmont.testtask.entity.Doctor;
 
+import java.util.List;
+
 public interface DoctorDAO {
 
-    Doctor getDoctorByName(String name);
+    List<Doctor> getDoctors();
 
-    void insertDoctor(Long id, String name, String surname, String patronymic, String specialization);
+    //void insertDoctor(Doctor doctor);
 
+    Doctor getDoctorById(Long id);
+
+    void mergeDoctor(Doctor doctor);
 }

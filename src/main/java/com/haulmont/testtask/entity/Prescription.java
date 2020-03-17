@@ -2,45 +2,34 @@ package com.haulmont.testtask.entity;
 
 import com.haulmont.testtask.entity.parent.ParentEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.sql.Date;
-import java.time.Instant;
 
-@Entity
 public class Prescription extends ParentEntity {
-
-    @Column(name = "Description")
     private String description;
 
-    @JoinColumn(name = "Patient")
-    @ManyToOne
-    private Long patient;
+    private Patient patient;
 
-    @JoinColumn(name = "Doctor")
-    @ManyToOne
-    private Long doctor;
+    private Doctor doctor;
 
-    @Column(name = "CreationDate")
     private Date date;
 
-    @Column(name = "ExpirationPeriod")
     private Integer period;
 
-    @Column(name = "Priority")
     private Priority priority;
+
+    private String doctorFullName;
+
+    private String patientFullName;
 
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public void setPatient(Long patient) {
+    public void setPatient(Patient patient) {
         this.patient = patient;
     }
 
-    public void setDoctor(Long doctor) {
+    public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
 
@@ -64,11 +53,11 @@ public class Prescription extends ParentEntity {
         return period;
     }
 
-    public Long getPatient() {
+    public Patient getPatient() {
         return patient;
     }
 
-    public Long getDoctor() {
+    public Doctor getDoctor() {
         return doctor;
     }
 
@@ -78,5 +67,21 @@ public class Prescription extends ParentEntity {
 
     public Priority getPriority() {
         return priority;
+    }
+
+    public void setDoctorFullName() {
+        this.doctorFullName = doctor.getSurname() + " " + doctor.getName() + " " + doctor.getPatronymic();
+    }
+
+    public String getDoctorFullName(){
+        return doctorFullName;
+    }
+
+    public void setPatientFullName() {
+        this.patientFullName = patient.getSurname() + " " + patient.getName() + " " + patient.getPatronymic();
+    }
+
+    public String getPatientFullName() {
+        return patientFullName;
     }
 }

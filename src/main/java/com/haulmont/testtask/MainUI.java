@@ -1,16 +1,11 @@
 package com.haulmont.testtask;
 
-import com.haulmont.testtask.dao.DoctorDAO;
-import com.haulmont.testtask.dao.PatientDAO;
-import com.haulmont.testtask.dao.PrescriptionDAO;
 import com.haulmont.testtask.dao.connection.MyConnection;
-import com.haulmont.testtask.dao.impl.DoctorDAOImpl;
-import com.haulmont.testtask.dao.impl.PatientDAOImpl;
-import com.haulmont.testtask.dao.impl.PrescriptionDAOImpl;
-import com.haulmont.testtask.entity.Doctor;
-import com.haulmont.testtask.entity.Patient;
-import com.haulmont.testtask.exception.PatientNotFound;
+import com.haulmont.testtask.service.DoctorService;
+import com.haulmont.testtask.service.PatientService;
+import com.haulmont.testtask.service.PrescriptionService;
 import com.vaadin.annotations.Theme;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
@@ -22,24 +17,42 @@ public class MainUI extends UI {
     protected void init(VaadinRequest request) {
         MyConnection connection = new MyConnection();
 
-        PatientDAO patientDAO = new PatientDAOImpl();
-        DoctorDAO doctorDAO = new DoctorDAOImpl();
-        PrescriptionDAO prescriptionDAO = new PrescriptionDAOImpl();
+        DoctorService doctorService = new DoctorService();
+        PatientService patientService = new PatientService();
+        PrescriptionService prescriptionService = new PrescriptionService();
 
         VerticalLayout layout = new VerticalLayout();
-        layout.setSizeFull();
         layout.setMargin(true);
 
-        Doctor doctor = doctorDAO.getDoctorByName("Ivan");
+        Button doctorsButton = new Button("Doctors");
+        doctorsButton.addClickListener(e -> {
+            layout.removeAllComponents();
+            rebuild(doctorService.getDoctorsLayout());
+        });
 
-        Grid<Doctor> grid = new Grid(Doctor.class);
-        grid.removeColumn("id");
-        grid.setColumnOrder("name", "surname", "patronymic", "specialization");
-        grid.setItems(doctor);
-        grid.setSizeFull();
+        Button patientButton = new Button("Patients");
+        patientButton.addClickListener(e -> {
+            layout.removeAllComponents();
+            layout.addComponent(patientService.getPatientsGrid());
+            rebuild(layout);
+        });
 
-        layout.addComponent(grid);
+        Button prescriptionButton = new Button("Prescriptions");
+        prescriptionButton.addClickListener(e -> {
+            layout.removeAllComponents();
+            layout.addComponent(prescriptionService.getPrescriptionsGrid());
+            rebuild(layout);
+        });
 
+        layout.addComponent(doctorsButton);
+        layout.addComponent(patientButton);
+        layout.addComponent(prescriptionButton);
+
+        rebuild(layout);
+    }
+
+    protected void rebuild(Layout layout){
         setContent(layout);
     }
+
 }
