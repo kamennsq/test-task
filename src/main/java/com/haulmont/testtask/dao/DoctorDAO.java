@@ -8,9 +8,11 @@ public interface DoctorDAO {
 
     List<Doctor> getDoctors();
 
-    //void insertDoctor(Doctor doctor);
+    void insertDoctor(Doctor doctor);
 
     Doctor getDoctorById(Long id);
 
-    void mergeDoctor(Doctor doctor);
+    void updateDoctor(Doctor doctor);
+
+    void deleteDoctor(Doctor doctor);
 }

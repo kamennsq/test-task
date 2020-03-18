@@ -33,15 +33,13 @@ public class MainUI extends UI {
         Button patientButton = new Button("Patients");
         patientButton.addClickListener(e -> {
             layout.removeAllComponents();
-            layout.addComponent(patientService.getPatientsGrid());
-            rebuild(layout);
+            rebuild(patientService.getPatientsLayout());
         });
 
         Button prescriptionButton = new Button("Prescriptions");
         prescriptionButton.addClickListener(e -> {
             layout.removeAllComponents();
-            layout.addComponent(prescriptionService.getPrescriptionsGrid());
-            rebuild(layout);
+            rebuild(prescriptionService.getPrescriptionsLayout());
         });
 
         layout.addComponent(doctorsButton);

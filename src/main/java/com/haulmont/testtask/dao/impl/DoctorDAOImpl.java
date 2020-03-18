@@ -35,20 +35,20 @@ public class DoctorDAOImpl implements DoctorDAO {
         }
     }
 
-//    @Override
-//    public void insertDoctor(Doctor doctor) {
-//        try{
-//            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into Doctor values ((select max(Id)+1 from Doctor), ?, ?, ?, ?)");
-//            ps.setString(1, doctor.getName());
-//            ps.setString(2, doctor.getSurname());
-//            ps.setString(3, doctor.getPatronymic());
-//            ps.setString(4, doctor.getSpecialization());
-//            ps.executeUpdate();
-//        }
-//        catch (SQLException e){
-//            e.printStackTrace();
-//        }
-//    }
+    @Override
+    public void insertDoctor(Doctor doctor) {
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into Doctor values ((select max(Id)+1 from Doctor), ?, ?, ?, ?)");
+            ps.setString(1, doctor.getName());
+            ps.setString(2, doctor.getSurname());
+            ps.setString(3, doctor.getPatronymic());
+            ps.setString(4, doctor.getSpecialization());
+            ps.executeUpdate();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public Doctor getDoctorById(Long id) {
@@ -73,26 +73,33 @@ public class DoctorDAOImpl implements DoctorDAO {
     }
 
     @Override
-    public void mergeDoctor(Doctor doctor) {
+    public void updateDoctor(Doctor doctor) {
         try{
             PreparedStatement ps = MyConnection.connection.prepareStatement("merge into Doctor doc " +
-                    "using (select * from Doctor a where Id = ?) a " +
+                    "using (select Id from Doctor where Id = ?) a " +
                     "on doc.Id = a.Id " +
                     "when matched then update set " +
                     "Name = ?, " +
                     "Surname = ?, " +
                     "Patronymic = ?, " +
-                    "Specialization = ? " +
-                    "when not matched then insert values ((select max(Id)+1 from Doctor), ?, ?, ?, ?)");
+                    "Specialization = ?");
             ps.setLong(1, doctor.getId());
             ps.setString(2, doctor.getName());
             ps.setString(3, doctor.getSurname());
             ps.setString(4, doctor.getPatronymic());
             ps.setString(5, doctor.getSpecialization());
-            ps.setString(6, doctor.getName());
-            ps.setString(7, doctor.getSurname());
-            ps.setString(8, doctor.getPatronymic());
-            ps.setString(9, doctor.getSpecialization());
+            ps.executeUpdate();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteDoctor(Doctor doctor) {
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("delete from Doctor where Id = ?");
+            ps.setLong(1, doctor.getId());
             ps.executeUpdate();
         }
         catch (SQLException e){

@@ -18,13 +18,12 @@ public class DoctorService {
     private TextField surname = new TextField("Surname");
     private TextField patronymic = new TextField("Patronymic");
     private TextField specialization = new TextField("Specialization");
-    private Button editButton = new Button("Edit");;
+    private Button editButton = new Button("Edit");
+    private Button deleteButton;
     private Doctor doctor;
 
     public Layout getDoctorsLayout() {
-        layout.addComponent(getGrid());
-        layout.addComponent(getCreateButton());
-        layout.addComponent(getEditButton());
+        constructLayoutComponents();
         return layout;
     }
 
@@ -39,7 +38,12 @@ public class DoctorService {
 
         grid.asSingleSelect().addSelectionListener(e ->{
             editButton.setEnabled(true);
-            doctor = e.getFirstSelectedItem().get();
+            deleteButton.setEnabled(true);
+            for (int i = 0; i < doctors.size(); i++){
+                if (doctors.get(i).equals(e.getFirstSelectedItem().get())){
+                    doctor = doctors.get(i);
+                }
+            }
         });
 
         return grid;
@@ -56,28 +60,16 @@ public class DoctorService {
 
     private Button getConfirmCreationButton(){
         Button confirmCreation = new Button("OK");
-        confirmCreation.addClickListener(e ->{
-            interactWithTable("insert");
-        });
+        confirmCreation.addClickListener(e -> interactWithTable("insert"));
         return confirmCreation;
     }
 
     private Button getCancelButton(){
         Button confirmCreation = new Button("Cancel");
         confirmCreation.addClickListener(e ->{
-            layout.removeAllComponents();
-            clearContent();
-            layout.addComponent(getGrid());
-            layout.addComponent(getCreateButton());
+            constructLayoutComponents();
         });
         return confirmCreation;
-    }
-
-    private void clearContent(){
-        name.clear();
-        surname.clear();
-        patronymic.clear();
-        specialization.clear();
     }
 
     private Button getEditButton(){
@@ -123,9 +115,7 @@ public class DoctorService {
 
     private Button getConfirmEditButton(){
         Button button = new Button("Confirm");
-        button.addClickListener(e ->{
-            interactWithTable("update");
-        });
+        button.addClickListener(e -> interactWithTable("update"));
         return button;
     }
 
@@ -135,16 +125,36 @@ public class DoctorService {
         doctor.setSurname(surname.getValue());
         doctor.setPatronymic(patronymic.getValue());
         doctor.setSpecialization(specialization.getValue());
-        doctor.setId(this.doctor.getId());
-        clearContent();
-//        switch (action){
-//            case "insert": doctorDAO.insertDoctor(doctor); break;
-//            case "update": doctorDAO.updateDoctor(doctor); break;
-//        }
-        doctorDAO.mergeDoctor(doctor);
+        if (this.doctor != null){
+            doctor.setId(this.doctor.getId());
+        }
+        switch (action){
+            case "insert": doctorDAO.insertDoctor(doctor); break;
+            case "update": doctorDAO.updateDoctor(doctor); break;
+            case "delete": doctorDAO.deleteDoctor(doctor); break;
+        }
+        constructLayoutComponents();
+    }
+
+    private Button getDeleteButton(){
+        deleteButton = new Button("Delete");
+        deleteButton.setEnabled(false);
+        deleteButton.addClickListener(e -> {
+            interactWithTable("delete");
+        });
+        return deleteButton;
+    }
+
+    private void constructLayoutComponents(){
+        name.clear();
+        surname.clear();
+        patronymic.clear();
+        specialization.clear();
+        doctor = null;
         layout.removeAllComponents();
         layout.addComponent(getGrid());
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
+        layout.addComponent(getDeleteButton());
     }
 }

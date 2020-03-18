@@ -42,7 +42,9 @@ public class MyConnection {
                         "Priority VARCHAR(10) NOT NULL, " +
                         "CreationDate DATE NOT NULL, " +
                         "ExpirationPeriod INTEGER NOT NULL, " +
-                        "PRIMARY KEY(ID))");
+                        "PRIMARY KEY(ID), " +
+                        "FOREIGN KEY (Doctor) REFERENCES Doctor(Id), " +
+                        "FOREIGN KEY (Patient) REFERENCES Patient(Id))");
                 connection.createStatement().executeUpdate("insert into Patient values (1, 'Peter', 'Smith', 'None', '4545454')");
                 connection.createStatement().executeUpdate("insert into Doctor values (1, 'Ivan', 'Post', 'None', 'Surgeon')");
                 connection.createStatement().executeUpdate("insert into Prescription values (1, 'To kill the pain', 1, 1, 'NORMAL', sysdate, 12)");

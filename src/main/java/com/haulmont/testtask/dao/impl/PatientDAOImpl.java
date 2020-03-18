@@ -9,47 +9,44 @@ import com.haulmont.testtask.exception.PatientNotFound;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PatientDAOImpl implements PatientDAO {
 
     @Override
-    public Patient getPatientByName(String name) {
-        try {
-            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Patient a where name = ?");
-            ps.setString(1, name);
-            ResultSet rs = ps.executeQuery();
-
-            Patient patient = new Patient();
-            while (rs.next()) {
-                patient.setId(rs.getLong("ID"));
+    public List<Patient> getPatients() {
+        List<Patient> list = new ArrayList<>();
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Patient");
+            ResultSet rs  = ps.executeQuery();
+            while (rs.next()){
+                Patient patient = new Patient();
+                patient.setId(rs.getLong("Id"));
                 patient.setName(rs.getString("Name"));
                 patient.setSurname(rs.getString("Surname"));
                 patient.setPatronymic(rs.getString("Patronymic"));
                 patient.setPhoneNumber(rs.getString("PhoneNumber"));
+                list.add(patient);
             }
-            return patient;
+            return list;
         }
         catch (SQLException e){
-            //e.printStackTrace();
-            throw new PatientNotFound();
-            //return null;
+            return null;
         }
     }
 
     @Override
     public void insertPatient(Patient patient) {
         try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into PATIENT(ID, Name, Surname, Patronymic, PhoneNumber) " +
-                    "values (?, ?, ?, ?, ?)");
-            ps.setLong(1, patient.getId());
-            ps.setString(2, patient.getName());
-            ps.setString(3, patient.getSurname());
-            ps.setString(4, patient.getPatronymic());
-            ps.setString(5, patient.getPhoneNumber());
+            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into PATIENT values ((select max(Id)+1 from Patient), ?, ?, ?, ?)");
+            ps.setString(1, patient.getName());
+            ps.setString(2, patient.getSurname());
+            ps.setString(3, patient.getPatronymic());
+            ps.setString(4, patient.getPhoneNumber());
             ps.executeUpdate();
         }
         catch (SQLException e){
-            //e.printStackTrace();
             throw new ImpossibleToInsertPatient();
         }
     }
@@ -74,6 +71,41 @@ public class PatientDAOImpl implements PatientDAO {
             //e.printStackTrace();
             throw new PatientNotFound();
             //return null;
+        }
+    }
+
+    @Override
+    public void updatePatient(Patient patient) {
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("merge into Patient p " +
+                    "using (select Id from Patient where Id = ?) a " +
+                    "on p.Id = a.Id " +
+                    "when matched then update set " +
+                    "Name = ?, " +
+                    "Surname = ?, " +
+                    "Patronymic = ?, " +
+                    "PhoneNumber = ?");
+            ps.setLong(1, patient.getId());
+            ps.setString(2, patient.getName());
+            ps.setString(3, patient.getSurname());
+            ps.setString(4, patient.getPatronymic());
+            ps.setString(5, patient.getPhoneNumber());
+            ps.executeUpdate();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deletePatient(Patient patient) {
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("delete from Patient where Id = ?");
+            ps.setLong(1, patient.getId());
+            ps.executeUpdate();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
         }
     }
 }
