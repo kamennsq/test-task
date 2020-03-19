@@ -45,14 +45,15 @@ public class MyConnection {
                         "PRIMARY KEY(ID), " +
                         "FOREIGN KEY (Doctor) REFERENCES Doctor(Id), " +
                         "FOREIGN KEY (Patient) REFERENCES Patient(Id))");
-                connection.createStatement().executeUpdate("insert into Patient values (1, 'Peter', 'Smith', 'None', '4545454')");
-                connection.createStatement().executeUpdate("insert into Doctor values (1, 'Ivan', 'Post', 'None', 'Surgeon')");
-                connection.createStatement().executeUpdate("insert into Prescription values (1, 'To kill the pain', 1, 1, 'NORMAL', sysdate, 12)");
+                connection.createStatement().executeUpdate("create sequence idSequence start with 1 increment by 1");
+                connection.createStatement().executeUpdate("insert into Patient values (next value for idSequence, 'Peter', 'Smith', 'None', '4545454')");
+                connection.createStatement().executeUpdate("insert into Doctor values (next value for idSequence, 'Ivan', 'Post', 'None', 'Surgeon')");
+                connection.createStatement().executeUpdate("insert into Prescription values (next value for idSequence, 'To kill the pain', 1, 2, 'NORMAL', sysdate, 12)");
                 connection.createStatement().execute("CHECKPOINT");
             }
             catch (SQLException e) {
                 System.out.println("Unable to get connection");
-                //e.printStackTrace();
+                e.printStackTrace();
             }
             catch (ClassNotFoundException e){
                 System.out.println("Driver was not found");

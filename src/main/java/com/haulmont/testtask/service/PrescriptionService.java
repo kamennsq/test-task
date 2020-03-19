@@ -1,31 +1,36 @@
 package com.haulmont.testtask.service;
 
-import com.haulmont.testtask.dao.DoctorDAO;
 import com.haulmont.testtask.dao.PrescriptionDAO;
-import com.haulmont.testtask.dao.impl.DoctorDAOImpl;
 import com.haulmont.testtask.dao.impl.PrescriptionDAOImpl;
 import com.haulmont.testtask.entity.Doctor;
+import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.entity.Priority;
-import com.vaadin.data.Binder;
-import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.*;
 
 import java.util.List;
 
 public class PrescriptionService {
     private VerticalLayout layout = new VerticalLayout();
+
     private PrescriptionDAO prescriptionDAO = new PrescriptionDAOImpl();
-    private Binder<Prescription> binder = new Binder<>(Prescription.class);
+
     private TextField description = new TextField("Description");
     private TextField patientName = new TextField("Patient's name");
     private TextField doctorsName = new TextField("Doctor's name");
     private TextField priority = new TextField("Priority");
     private TextField creationDate = new TextField("Creation Date");
     private TextField expirationPeriod = new TextField("Expiration Period");
-    private Button editButton = new Button("Edit");
+
+    private Grid<Doctor> doctors;
+    private Grid<Patient> patients;
+
+    private Button editButton = new Button("Edit");;
     private Button deleteButton;
+
     private Prescription prescription;
+    private Doctor doctor;
+    private Patient patient;
 
     public Layout getPrescriptionsLayout() {
         constructLayoutComponents();
@@ -35,11 +40,11 @@ public class PrescriptionService {
     private Grid<Prescription> getGrid(){
         List<Prescription> prescriptions = prescriptionDAO.getPrescriptions();
 
-        Grid<Prescription> grid = new Grid(Prescription.class);
+        Grid<Prescription> grid = new Grid<>(Prescription.class);
         grid.getColumn("id").setHidden(true);
         grid.getColumn("doctor").setHidden(true);
         grid.getColumn("patient").setHidden(true);
-        grid.setColumnOrder("doctorFullName", "patientFullName", "priority", "description", "date", "period");
+        grid.setColumnOrder("doctorFullName", "patientFullName", "priority", "description", "creationDate", "expirationPeriod");
         grid.setItems(prescriptions);
         grid.setSizeFull();
 
@@ -88,8 +93,8 @@ public class PrescriptionService {
             patientName.setValue(prescription.getPatientFullName());
             doctorsName.setValue(prescription.getDoctorFullName());
             priority.setValue(prescription.getPriority().toString());
-            creationDate.setValue(prescription.getDate().toString());
-            expirationPeriod.setValue(prescription.getPeriod().toString());
+            creationDate.setValue(prescription.getCreationDate().toString());
+            expirationPeriod.setValue(String.valueOf(prescription.getExpirationPeriod()));
         });
         return editButton;
     }
@@ -97,27 +102,12 @@ public class PrescriptionService {
     private void toBuildExtraLayout(){
         layout.removeAllComponents();
 
-        layout.addComponent(new Label("Please, fill a new data for Doctor"));
-
-        layout.addComponent(name);
-        binder.forField(name)
-                .withValidator(new StringLengthValidator("Name should be from 2 to 12 symbols", 2, 12))
-                .bind("name");
-
-        layout.addComponent(surname);
-        binder.forField(surname)
-                .withValidator(new StringLengthValidator("Surname should be from 2 to 15 symbols", 2, 15))
-                .bind("surname");
-
-        layout.addComponent(patronymic);
-        binder.forField(patronymic)
-                .withValidator(new StringLengthValidator("Patronymic should be from 2 to 15 symbols", 2, 15))
-                .bind("patronymic");
-
-        layout.addComponent(specialization);
-        binder.forField(specialization)
-                .withValidator(new StringLengthValidator("Specialization should be from 2 to 15 symbols", 2, 15))
-                .bind("specialization");
+        layout.addComponent(new Label("Please, fill a new data for Prescription"));
+        layout.addComponent(description);
+        layout.addComponent(expirationPeriod);
+        layout.addComponent(getDoctorsList());
+        layout.addComponent(getPatientsList());
+        layout.addComponent(priority);
 
         layout.addComponent(getCancelButton());
     }
@@ -128,20 +118,48 @@ public class PrescriptionService {
         return button;
     }
 
+//    private void interactWithTable(String action){
+//        Prescription prescription = new Prescription();
+//        if (this.prescription != null){
+//            prescription.setId(this.prescription.getId());
+//            prescription.setDoctor(this.prescription.getDoctor());
+//            prescription.setPatient(this.prescription.getPatient());
+//            prescription.setPriority(this.prescription.getPriority());
+//            prescription.setExpirationPeriod(this.prescription.getExpirationPeriod());
+//        }
+//        else{
+//            prescription.setExpirationPeriod(Integer.parseInt(expirationPeriod.getValue()));
+//            prescription.setDescription(description.getValue());
+//        }
+//        switch (action){
+//            case "insert": prescriptionDAO.insertPrescription(prescription); break;
+//            case "update": prescriptionDAO.updatePrescription(prescription); break;
+//            case "delete": prescriptionDAO.deletePrescription(prescription); break;
+//        }
+//        constructLayoutComponents();
+//    }
+
     private void interactWithTable(String action){
         Prescription prescription = new Prescription();
-        prescription.setDescription(description.getValue());
-        prescription.setPatient(p.getValue());
-        prescription.setDoctor(patronymic.getValue());
-        prescription.setPriority();
-        prescription.setPeriod(Integer.valueOf(expirationPeriod.getValue()));
-        if (this.prescription != null){
-            prescription.setId(this.prescription.getId());
-        }
         switch (action){
-            case "insert": prescriptionDAO.insertPrescription(prescription); break;
-            case "update": prescriptionDAO.updatePrescription(prescription); break;
-            case "delete": prescriptionDAO.deletePrescription(prescription); break;
+            case "delete" : prescription.setId(this.prescription.getId());
+                            prescriptionDAO.deletePrescription(prescription);
+                            break;
+            case "update" : prescription.setId(this.prescription.getId());
+                            prescription.setExpirationPeriod(Integer.parseInt(expirationPeriod.getValue()));
+                            prescription.setDescription(description.getValue());
+                            prescription.setDoctor(doctor);
+                            prescription.setPatient(patient);
+                            prescription.setPriority(Priority.valueOf(priority.getValue().toUpperCase()));
+                            prescriptionDAO.updatePrescription(prescription);
+                            break;
+            case "insert" : prescription.setDescription(description.getValue());
+                            prescription.setExpirationPeriod(Integer.parseInt(expirationPeriod.getValue()));
+                            prescription.setDoctor(doctor);
+                            prescription.setPatient(patient);
+                            prescription.setPriority(Priority.valueOf(priority.getValue().toUpperCase()));
+                            prescriptionDAO.insertPrescription(prescription);
+                            break;
         }
         constructLayoutComponents();
     }
@@ -156,15 +174,73 @@ public class PrescriptionService {
     }
 
     private void constructLayoutComponents(){
-        name.clear();
-        surname.clear();
-        patronymic.clear();
-        specialization.clear();
+        description.clear();
+        doctorsName.clear();
+        patientName.clear();
+        priority.clear();
+        creationDate.clear();
+        expirationPeriod.clear();
+        prescription = null;
+        doctors = null;
         doctor = null;
+        patients = null;
+        patient = null;
         layout.removeAllComponents();
         layout.addComponent(getGrid());
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
+    }
+
+    private Grid<Doctor> getDoctorsList(){
+        doctors = new Grid<>(Doctor.class);
+        List<Doctor> doctorsList = prescriptionDAO.getDoctorList();
+
+        doctors.getColumn("id").setHidden(true);
+        doctors.setColumnOrder("name", "surname", "patronymic", "specialization");
+        doctors.setItems(doctorsList);
+        doctors.setCaption("Doctors");
+
+        if(prescription != null) {
+            doctors.select(prescription.getDoctor());
+            doctor = prescription.getDoctor();
+        }
+
+        doctors.asSingleSelect().addSelectionListener(e ->{
+            for (int i = 0; i < doctorsList.size(); i++){
+                if (doctorsList.get(i).equals(e.getFirstSelectedItem().get())){
+                    doctor = doctorsList.get(i);
+                }
+            }
+        });
+
+        return doctors;
+    }
+
+    private Grid<Patient> getPatientsList(){
+        patients = new Grid<>(Patient.class);
+        List<Patient> patientsList = prescriptionDAO.getPatientList();
+
+        patients.getColumn("id").setHidden(true);
+        patients.setColumnOrder("name", "surname", "patronymic", "phoneNumber");
+        patients.setItems(patientsList);
+        patients.setCaption("Patients");
+
+        if(prescription != null) {
+            patients.select(prescription.getPatient());
+            patient = prescription.getPatient();
+        }
+
+        patients.asSingleSelect().addSelectionListener(e ->{
+            editButton.setEnabled(true);
+            deleteButton.setEnabled(true);
+            for (int i = 0; i < patientsList.size(); i++){
+                if (patientsList.get(i).equals(e.getFirstSelectedItem().get())){
+                    patient = patientsList.get(i);
+                }
+            }
+        });
+
+        return patients;
     }
 }

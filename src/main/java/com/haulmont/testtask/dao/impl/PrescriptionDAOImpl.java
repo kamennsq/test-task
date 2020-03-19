@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrescriptionDAOImpl implements PrescriptionDAO {
+    private List<Doctor> doctorList = new ArrayList<>();
+    private List<Patient> patientList = new ArrayList<>();
 
     @Override
     public Prescription getPrescriptionById(Long id) {
@@ -32,11 +34,12 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setDescription(rs.getString("Description"));
                 prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
                 prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setDate(rs.getDate("CreationDate"));
-                prescription.setPeriod(rs.getInt("ExpirationPeriod"));
+                prescription.setCreationDate(rs.getDate("CreationDate"));
+                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
                 prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
                 prescription.setDoctorFullName();
                 prescription.setPatientFullName();
+
             }
             return prescription;
         }
@@ -50,6 +53,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
         DoctorDAO doctorDAO = new DoctorDAOImpl();
         PatientDAO patientDAO = new PatientDAOImpl();
         List<Prescription> list = new ArrayList<>();
+        setDoctorList(doctorDAO);
+        setPatientList(patientDAO);
         try{
             PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription");
             ResultSet rs = ps.executeQuery();
@@ -59,8 +64,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setDescription(rs.getString("Description"));
                 prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
                 prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setDate(rs.getDate("CreationDate"));
-                prescription.setPeriod(rs.getInt("ExpirationPeriod"));
+                prescription.setCreationDate(rs.getDate("CreationDate"));
+                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
                 prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
                 prescription.setDoctorFullName();
                 prescription.setPatientFullName();
@@ -88,8 +93,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setDescription(rs.getString("Description"));
                 prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
                 prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setDate(rs.getDate("CreationDate"));
-                prescription.setPeriod(rs.getInt("ExpirationPeriod"));
+                prescription.setCreationDate(rs.getDate("CreationDate"));
+                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
                 prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
                 prescription.setDoctorFullName();
                 prescription.setPatientFullName();
@@ -117,8 +122,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setDescription(rs.getString("Description"));
                 prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
                 prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setDate(rs.getDate("CreationDate"));
-                prescription.setPeriod(rs.getInt("ExpirationPeriod"));
+                prescription.setCreationDate(rs.getDate("CreationDate"));
+                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
                 prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
                 prescription.setDoctorFullName();
                 prescription.setPatientFullName();
@@ -146,8 +151,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setDescription(rs.getString("Description"));
                 prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
                 prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setDate(rs.getDate("CreationDate"));
-                prescription.setPeriod(rs.getInt("ExpirationPeriod"));
+                prescription.setCreationDate(rs.getDate("CreationDate"));
+                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
                 prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
                 prescription.setDoctorFullName();
                 prescription.setPatientFullName();
@@ -175,8 +180,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setDescription(rs.getString("Description"));
                 prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
                 prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setDate(rs.getDate("CreationDate"));
-                prescription.setPeriod(rs.getInt("ExpirationPeriod"));
+                prescription.setCreationDate(rs.getDate("CreationDate"));
+                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
                 prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
                 prescription.setDoctorFullName();
                 prescription.setPatientFullName();
@@ -197,15 +202,15 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                     "on ps.Id = a.Id " +
                     "when matched then update set " +
                     "Description = ?, " +
+                    "ExpirationPeriod = ?, " +
                     "Patient = ?, " +
                     "Doctor = ?, " +
-                    "Period = ?, " +
                     "Priority = ?");
             ps.setLong(1, prescription.getId());
             ps.setString(2, prescription.getDescription());
-            ps.setLong(3, prescription.getPatient().getId());
-            ps.setLong(4, prescription.getDoctor().getId());
-            ps.setInt(5, prescription.getPeriod());
+            ps.setInt(3, prescription.getExpirationPeriod());
+            ps.setLong(4, prescription.getPatient().getId());
+            ps.setLong(5, prescription.getDoctor().getId());
             ps.setString(6, prescription.getPriority().toString());
             ps.executeUpdate();
         }
@@ -229,16 +234,32 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
     @Override
     public void insertPrescription(Prescription prescription) {
         try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into Prescription values ((select max(Id) from Prescription), ?, ?, ?, sysdate, ?, ?)");
+            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into Prescription values (next value for idSequence, ?, ?, ?, ?, sysdate, ?)");
             ps.setString(1, prescription.getDescription());
             ps.setLong(2, prescription.getPatient().getId());
             ps.setLong(3, prescription.getDoctor().getId());
-            ps.setInt(4, prescription.getPeriod());
-            ps.setString(5, prescription.getPriority().toString());
+            ps.setString(4, prescription.getPriority().toString());
+            ps.setInt(5, prescription.getExpirationPeriod());
             ps.executeUpdate();
         }
         catch (SQLException e){
             e.printStackTrace();
         }
+    }
+
+    private void setDoctorList(DoctorDAO doctorDAO){
+        doctorList = doctorDAO.getDoctors();
+    }
+
+    private void setPatientList(PatientDAO patientDAO){
+        patientList = patientDAO.getPatients();
+    }
+
+    public List<Patient> getPatientList(){
+        return patientList;
+    }
+
+    public List<Doctor> getDoctorList(){
+        return doctorList;
     }
 }

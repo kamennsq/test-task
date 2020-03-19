@@ -39,7 +39,7 @@ public class PatientDAOImpl implements PatientDAO {
     @Override
     public void insertPatient(Patient patient) {
         try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into PATIENT values ((select max(Id)+1 from Patient), ?, ?, ?, ?)");
+            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into PATIENT values (next value for idSequence, ?, ?, ?, ?)");
             ps.setString(1, patient.getName());
             ps.setString(2, patient.getSurname());
             ps.setString(3, patient.getPatronymic());

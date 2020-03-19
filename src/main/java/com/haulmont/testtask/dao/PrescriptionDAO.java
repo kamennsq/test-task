@@ -27,4 +27,8 @@ public interface PrescriptionDAO {
 
     void deletePrescription(Prescription prescription);
 
+    List<Patient> getPatientList();
+
+    List<Doctor> getDoctorList();
+
 }

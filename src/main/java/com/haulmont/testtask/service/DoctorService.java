@@ -12,14 +12,20 @@ import java.util.List;
 
 public class DoctorService {
     private VerticalLayout layout = new VerticalLayout();
+
     private DoctorDAO doctorDAO = new DoctorDAOImpl();
+
     private Binder<Doctor> binder = new Binder<>(Doctor.class);
+
     private TextField name = new TextField("Name");
     private TextField surname = new TextField("Surname");
     private TextField patronymic = new TextField("Patronymic");
     private TextField specialization = new TextField("Specialization");
+
+    private Button statisticButton = new Button("Show Statistics");
     private Button editButton = new Button("Edit");
     private Button deleteButton;
+
     private Doctor doctor;
 
     public Layout getDoctorsLayout() {
@@ -145,6 +151,17 @@ public class DoctorService {
         return deleteButton;
     }
 
+    private Button getStatisticButton(){
+        statisticButton.addClickListener(e ->{
+            toBuildStatistics();
+        });
+        return statisticButton;
+    }
+
+    private void toBuildStatistics(){
+
+    }
+
     private void constructLayoutComponents(){
         name.clear();
         surname.clear();
@@ -156,5 +173,6 @@ public class DoctorService {
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
+        layout.addComponent(getStatisticButton());
     }
 }

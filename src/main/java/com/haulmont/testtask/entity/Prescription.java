@@ -11,9 +11,9 @@ public class Prescription extends ParentEntity {
 
     private Doctor doctor;
 
-    private Date date;
+    private Date creationDate;
 
-    private Integer period;
+    private int expirationPeriod;
 
     private Priority priority;
 
@@ -33,12 +33,12 @@ public class Prescription extends ParentEntity {
         this.doctor = doctor;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 
-    public void setPeriod(Integer period) {
-        this.period = period;
+    public void setExpirationPeriod(int period) {
+        this.expirationPeriod = period;
     }
 
     public void setPriority(Priority priority) {
@@ -49,8 +49,8 @@ public class Prescription extends ParentEntity {
         return description;
     }
 
-    public Integer getPeriod() {
-        return period;
+    public int getExpirationPeriod() {
+        return expirationPeriod;
     }
 
     public Patient getPatient() {
@@ -61,8 +61,8 @@ public class Prescription extends ParentEntity {
         return doctor;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getCreationDate() {
+        return creationDate;
     }
 
     public Priority getPriority() {

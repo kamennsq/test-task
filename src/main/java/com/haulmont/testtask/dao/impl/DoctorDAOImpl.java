@@ -38,7 +38,7 @@ public class DoctorDAOImpl implements DoctorDAO {
     @Override
     public void insertDoctor(Doctor doctor) {
         try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into Doctor values ((select max(Id)+1 from Doctor), ?, ?, ?, ?)");
+            PreparedStatement ps = MyConnection.connection.prepareStatement("insert into Doctor values (next value for idSequence, ?, ?, ?, ?)");
             ps.setString(1, doctor.getName());
             ps.setString(2, doctor.getSurname());
             ps.setString(3, doctor.getPatronymic());
