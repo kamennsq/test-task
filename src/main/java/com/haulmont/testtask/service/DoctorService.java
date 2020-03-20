@@ -3,8 +3,7 @@ package com.haulmont.testtask.service;
 import com.haulmont.testtask.dao.DoctorDAO;
 import com.haulmont.testtask.dao.impl.DoctorDAOImpl;
 import com.haulmont.testtask.entity.Doctor;
-import com.vaadin.data.Binder;
-import com.vaadin.data.validator.StringLengthValidator;
+import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
 import java.util.List;
@@ -15,7 +14,7 @@ public class DoctorService {
 
     private DoctorDAO doctorDAO = new DoctorDAOImpl();
 
-    private Binder<Doctor> binder = new Binder<>(Doctor.class);
+    private SimpleStringValidator stringValidator = new SimpleStringValidator();
 
     private TextField name = new TextField("Name");
     private TextField surname = new TextField("Surname");
@@ -27,6 +26,10 @@ public class DoctorService {
     private Button deleteButton;
 
     private Doctor doctor;
+    private boolean isNameValid = false;
+    private boolean isSurnameValid = false;
+    private boolean isPatronymicValid = false;
+    private boolean isSpecializationValid = false;
 
     public Layout getDoctorsLayout() {
         constructLayoutComponents();
@@ -36,7 +39,7 @@ public class DoctorService {
     private Grid<Doctor> getGrid(){
         List<Doctor> doctors = doctorDAO.getDoctors();
 
-        Grid<Doctor> grid = new Grid(Doctor.class);
+        Grid<Doctor> grid = new Grid<>(Doctor.class);
         grid.getColumn("id").setHidden(true);
         grid.setColumnOrder("name", "surname", "patronymic", "specialization");
         grid.setItems(doctors);
@@ -66,7 +69,11 @@ public class DoctorService {
 
     private Button getConfirmCreationButton(){
         Button confirmCreation = new Button("OK");
-        confirmCreation.addClickListener(e -> interactWithTable("insert"));
+        confirmCreation.addClickListener(e ->{
+            if(areValuesValid()){
+                interactWithTable("insert");
+            }
+        });
         return confirmCreation;
     }
 
@@ -94,34 +101,75 @@ public class DoctorService {
     private void toBuildExtraLayout(){
         layout.removeAllComponents();
 
-        layout.addComponent(new Label("Please, fill a new data for Doctor"));
+        Label nameLabel = new Label("Name should contain from 3 to 15 symbols");
+        Label surnameLabel = new Label("Surname should contain from 3 to 15 symbols");
+        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 symbols");
+        Label specializationLabel = new Label("Specialization should contain from 3 to 15 symbols");
+        nameLabel.setVisible(false);
+        surnameLabel.setVisible(false);
+        patronymicLabel.setVisible(false);
+        specializationLabel.setVisible(false);
+
+        layout.addComponent(new Label("Please, fill a new data for Patient"));
 
         layout.addComponent(name);
-        binder.forField(name)
-                .withValidator(new StringLengthValidator("Name should be from 2 to 12 symbols", 2, 12))
-                .bind("name");
+        name.addValueChangeListener(e ->{
+            isNameValid = stringValidator.isValidString(name.getValue());
+            if(!isNameValid){
+                nameLabel.setVisible(true);
+            }
+            else{
+                nameLabel.setVisible(false);
+            }
+        });
+        layout.addComponentAsFirst(nameLabel);
 
         layout.addComponent(surname);
-        binder.forField(surname)
-                .withValidator(new StringLengthValidator("Surname should be from 2 to 15 symbols", 2, 15))
-                .bind("surname");
+        surname.addValueChangeListener(e ->{
+            isSurnameValid = stringValidator.isValidString(surname.getValue());
+            if(!isSurnameValid){
+                surnameLabel.setVisible(true);
+            }
+            else{
+                surnameLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(surnameLabel);
 
         layout.addComponent(patronymic);
-        binder.forField(patronymic)
-                .withValidator(new StringLengthValidator("Patronymic should be from 2 to 15 symbols", 2, 15))
-                .bind("patronymic");
+        patronymic.addValueChangeListener(e ->{
+            isPatronymicValid = stringValidator.isValidString(patronymic.getValue());
+            if(!isPatronymicValid){
+                patronymicLabel.setVisible(true);
+            }
+            else{
+                patronymicLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(patronymicLabel);
 
         layout.addComponent(specialization);
-        binder.forField(specialization)
-                .withValidator(new StringLengthValidator("Specialization should be from 2 to 15 symbols", 2, 15))
-                .bind("specialization");
+        specialization.addValueChangeListener(e ->{
+            isSpecializationValid = stringValidator.isValidString(specialization.getValue());
+            if(!isSpecializationValid){
+                specializationLabel.setVisible(true);
+            }
+            else{
+                specializationLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(specializationLabel);
 
         layout.addComponent(getCancelButton());
     }
 
     private Button getConfirmEditButton(){
         Button button = new Button("Confirm");
-        button.addClickListener(e -> interactWithTable("update"));
+        button.addClickListener(e ->{
+            if(areValuesValid()){
+                interactWithTable("update");
+            }
+        });
         return button;
     }
 
@@ -159,7 +207,12 @@ public class DoctorService {
     }
 
     private void toBuildStatistics(){
-
+        List<String> list = doctorDAO.buildStatistics();
+        Grid grid = new Grid();
+        grid.setData(list);
+        //grid.setItems(list);
+        layout.removeAllComponents();
+        layout.addComponent(grid);
     }
 
     private void constructLayoutComponents(){
@@ -174,5 +227,9 @@ public class DoctorService {
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
         layout.addComponent(getStatisticButton());
+    }
+
+    private boolean areValuesValid(){
+        return isNameValid && isSurnameValid && isPatronymicValid && isSpecializationValid;
     }
 }

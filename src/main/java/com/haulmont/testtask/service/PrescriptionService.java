@@ -6,14 +6,18 @@ import com.haulmont.testtask.entity.Doctor;
 import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.entity.Priority;
+import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PrescriptionService {
     private VerticalLayout layout = new VerticalLayout();
 
     private PrescriptionDAO prescriptionDAO = new PrescriptionDAOImpl();
+
+    private SimpleStringValidator stringValidator = new SimpleStringValidator();
 
     private TextField description = new TextField("Description");
     private TextField patientName = new TextField("Patient's name");
@@ -25,12 +29,24 @@ public class PrescriptionService {
     private Grid<Doctor> doctors;
     private Grid<Patient> patients;
 
-    private Button editButton = new Button("Edit");;
+    private Button editButton = new Button("Edit");
     private Button deleteButton;
 
     private Prescription prescription;
     private Doctor doctor;
     private Patient patient;
+    private boolean isValidDescription = false;
+    private boolean isValidExpirationPeriod = false;
+    private boolean isValidPriority = false;
+    boolean isValidFilterDescription = true;
+    boolean isValidFilterPatientName = true;
+    boolean isValidFilterPriority = true;
+
+    private String patientNameInFilter = "";
+    private String priorityInFilter = "";
+    private String descriptionInFilter = "";
+
+    private List<Prescription> filteredList = new ArrayList<>();
 
     public Layout getPrescriptionsLayout() {
         constructLayoutComponents();
@@ -38,7 +54,17 @@ public class PrescriptionService {
     }
 
     private Grid<Prescription> getGrid(){
-        List<Prescription> prescriptions = prescriptionDAO.getPrescriptions();
+        List<Prescription> prescriptions;
+
+        if(filteredList.isEmpty()){
+            prescriptions = prescriptionDAO.getPrescriptions();
+            patientNameInFilter = "";
+            descriptionInFilter = "";
+            priorityInFilter = "";
+        }
+        else{
+            prescriptions = filteredList;
+        }
 
         Grid<Prescription> grid = new Grid<>(Prescription.class);
         grid.getColumn("id").setHidden(true);
@@ -72,15 +98,17 @@ public class PrescriptionService {
 
     private Button getConfirmCreationButton(){
         Button confirmCreation = new Button("OK");
-        confirmCreation.addClickListener(e -> interactWithTable("insert"));
+        confirmCreation.addClickListener(e ->{
+            if(areValuesValid()){
+                interactWithTable("insert");
+            }
+        });
         return confirmCreation;
     }
 
     private Button getCancelButton(){
         Button confirmCreation = new Button("Cancel");
-        confirmCreation.addClickListener(e ->{
-            constructLayoutComponents();
-        });
+        confirmCreation.addClickListener(e -> constructLayoutComponents());
         return confirmCreation;
     }
 
@@ -101,43 +129,65 @@ public class PrescriptionService {
 
     private void toBuildExtraLayout(){
         layout.removeAllComponents();
+        Label descriptionLabel = new Label("Description length should be from 5 to 30 symbols");
+        Label expirationLabel = new Label("The field should contain values from 1 to 99");
+        Label priorityLabel = new Label("The field should contain one of following: CITO, NORMAL, STATIM");
+        descriptionLabel.setVisible(false);
+        expirationLabel.setVisible(false);
+        priorityLabel.setVisible(false);
 
         layout.addComponent(new Label("Please, fill a new data for Prescription"));
+
         layout.addComponent(description);
+        description.addValueChangeListener(e ->{
+            isValidDescription = stringValidator.isValidDescription(description.getValue());
+            if(!isValidDescription){
+                descriptionLabel.setVisible(true);
+            }
+            else{
+                descriptionLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(descriptionLabel);
+
         layout.addComponent(expirationPeriod);
+        expirationPeriod.addValueChangeListener(e ->{
+            isValidExpirationPeriod = stringValidator.isValidDatePeriod(expirationPeriod.getValue());
+            if(!isValidExpirationPeriod){
+                expirationLabel.setVisible(true);
+            }
+            else{
+                expirationLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(expirationLabel);
+
         layout.addComponent(getDoctorsList());
         layout.addComponent(getPatientsList());
+
         layout.addComponent(priority);
+        priority.addValueChangeListener(e ->{
+            isValidPriority = stringValidator.isValidPriority(priority.getValue().toUpperCase());
+            if(!isValidPriority){
+                priorityLabel.setVisible(true);
+            }
+            else{
+                priorityLabel.setVisible(false);
+            }
+        });
 
         layout.addComponent(getCancelButton());
     }
 
     private Button getConfirmEditButton(){
         Button button = new Button("Confirm");
-        button.addClickListener(e -> interactWithTable("update"));
+        button.addClickListener(e ->{
+            if(areValuesValid()){
+                interactWithTable("update");
+            }
+        });
         return button;
     }
-
-//    private void interactWithTable(String action){
-//        Prescription prescription = new Prescription();
-//        if (this.prescription != null){
-//            prescription.setId(this.prescription.getId());
-//            prescription.setDoctor(this.prescription.getDoctor());
-//            prescription.setPatient(this.prescription.getPatient());
-//            prescription.setPriority(this.prescription.getPriority());
-//            prescription.setExpirationPeriod(this.prescription.getExpirationPeriod());
-//        }
-//        else{
-//            prescription.setExpirationPeriod(Integer.parseInt(expirationPeriod.getValue()));
-//            prescription.setDescription(description.getValue());
-//        }
-//        switch (action){
-//            case "insert": prescriptionDAO.insertPrescription(prescription); break;
-//            case "update": prescriptionDAO.updatePrescription(prescription); break;
-//            case "delete": prescriptionDAO.deletePrescription(prescription); break;
-//        }
-//        constructLayoutComponents();
-//    }
 
     private void interactWithTable(String action){
         Prescription prescription = new Prescription();
@@ -160,6 +210,12 @@ public class PrescriptionService {
                             prescription.setPriority(Priority.valueOf(priority.getValue().toUpperCase()));
                             prescriptionDAO.insertPrescription(prescription);
                             break;
+            case "showByPatient" : filteredList = prescriptionDAO.getPrescriptionByPatientName(patientNameInFilter);
+                                   break;
+            case "showByDescription" : filteredList = prescriptionDAO.getPrescriptionByDescription(descriptionInFilter);
+                                       break;
+            case "showByPriority" : filteredList = prescriptionDAO.getPrescriptionByPriority(priorityInFilter);
+                                    break;
         }
         constructLayoutComponents();
     }
@@ -167,9 +223,7 @@ public class PrescriptionService {
     private Button getDeleteButton(){
         deleteButton = new Button("Delete");
         deleteButton.setEnabled(false);
-        deleteButton.addClickListener(e -> {
-            interactWithTable("delete");
-        });
+        deleteButton.addClickListener(e -> interactWithTable("delete"));
         return deleteButton;
     }
 
@@ -190,6 +244,7 @@ public class PrescriptionService {
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
+        layout.addComponentAsFirst(getFilterPanel());
     }
 
     private Grid<Doctor> getDoctorsList(){
@@ -242,5 +297,130 @@ public class PrescriptionService {
         });
 
         return patients;
+    }
+
+    private Panel getFilterPanel(){
+        Panel panel = new Panel("Filter");
+
+        Label patientLabel = new Label("Name should contain from 3 to 15 symbols");
+        Label descriptionLabel = new Label("Description should contain from 5 to 30 symbols");
+        Label priorityLabel = new Label("Priority should be one of the following: CITO, NORMAL, STATIM");
+        patientLabel.setVisible(false);
+        descriptionLabel.setVisible(false);
+        priorityLabel.setVisible(false);
+
+        FormLayout content = new FormLayout();
+
+        Button applyButton = new Button("Apply");
+        Button clearFilterButton = new Button("Reset Filter");
+
+        TextField patientNameField = new TextField("Patient");
+        TextField descriptionField = new TextField("Description");
+        TextField priorityField = new TextField("Priority");
+
+        patientNameField.addValueChangeListener(e ->{
+            if (patientNameField.getValue().length() > 0) {
+                descriptionField.setEnabled(false);
+                priorityField.setEnabled(false);
+                isValidFilterPatientName = stringValidator.isValidString(patientNameField.getValue());
+                if(!isValidFilterPatientName){
+                    patientLabel.setVisible(true);
+                }
+                else{
+                    patientLabel.setVisible(false);
+                }
+            }
+            else{
+                descriptionField.setEnabled(true);
+                priorityField.setEnabled(true);
+                isValidFilterPatientName = true;
+                patientLabel.setVisible(false);
+            }
+        });
+        descriptionField.addValueChangeListener(e ->{
+            if (descriptionField.getValue().length() > 0) {
+                patientNameField.setEnabled(false);
+                priorityField.setEnabled(false);
+                isValidFilterDescription = stringValidator.isValidDescription(descriptionField.getValue());
+                if(!isValidFilterDescription){
+                    descriptionLabel.setVisible(true);
+                }
+                else{
+                    descriptionLabel.setVisible(false);
+                }
+            }
+            else{
+                patientNameField.setEnabled(true);
+                priorityField.setEnabled(true);
+                isValidFilterDescription = true;
+                descriptionLabel.setVisible(false);
+            }
+        });
+        priorityField.addValueChangeListener(e ->{
+            if (priorityField.getValue().length() > 0) {
+                descriptionField.setEnabled(false);
+                patientNameField.setEnabled(false);
+                isValidFilterPriority = stringValidator.isValidPriority(priorityField.getValue().toUpperCase());
+                if(!isValidFilterPriority){
+                    priorityLabel.setVisible(true);
+                }
+                else{
+                    priorityLabel.setVisible(false);
+                }
+            }
+            else{
+                descriptionField.setEnabled(true);
+                patientNameField.setEnabled(true);
+                isValidFilterPriority = true;
+                priorityLabel.setVisible(false);
+            }
+        });
+
+        patientNameField.setValue(patientNameInFilter);
+        descriptionField.setValue(descriptionInFilter);
+        priorityField.setValue(priorityInFilter);
+
+        applyButton.addClickListener(e ->{
+            if(areFilterValuesValid()) {
+                if (patientNameField.getValue().length() > 0) {
+                    patientNameInFilter = patientNameField.getValue();
+                    interactWithTable("showByPatient");
+                }
+                if (descriptionField.getValue().length() > 0) {
+                    descriptionInFilter = descriptionField.getValue();
+                    interactWithTable("showByDescription");
+                }
+                if (priorityField.getValue().length() > 0) {
+                    priorityInFilter = priorityField.getValue().toUpperCase();
+                    interactWithTable("showByPriority");
+                }
+            }
+        });
+        clearFilterButton.addClickListener(e ->{
+            patientNameInFilter = "";
+            descriptionInFilter = "";
+            priorityInFilter = "";
+            filteredList.clear();
+            constructLayoutComponents();
+        });
+
+        content.addComponent(patientNameField);
+        content.addComponent(patientLabel);
+        content.addComponent(priorityField);
+        content.addComponent(priorityLabel);
+        content.addComponent(descriptionField);
+        content.addComponent(descriptionLabel);
+        content.addComponent(applyButton);
+        content.addComponent(clearFilterButton);
+        panel.setContent(content);
+        return panel;
+    }
+
+    private boolean areValuesValid(){
+        return isValidPriority && isValidExpirationPeriod && isValidDescription;
+    }
+
+    private boolean areFilterValuesValid(){
+        return isValidFilterPriority && isValidFilterDescription && isValidFilterPatientName;
     }
 }

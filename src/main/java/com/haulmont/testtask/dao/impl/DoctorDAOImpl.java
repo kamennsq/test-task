@@ -106,4 +106,28 @@ public class DoctorDAOImpl implements DoctorDAO {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public List<String> buildStatistics() {
+        List<String> list = new ArrayList<>();
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select b.Name, count(a.Id) as count " +
+                    "from Prescription a, Doctor b " +
+                    "where a.CreationDate = sysdate " +
+                    "and a.Doctor = b.Id " +
+                    "group by a.Doctor, b.Id");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()){
+                String result = rs.getString("Name") + " " + rs.getInt("count");
+                list.add(result);
+            }
+            return list;
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
 }

@@ -5,7 +5,6 @@ import com.haulmont.testtask.service.DoctorService;
 import com.haulmont.testtask.service.PatientService;
 import com.haulmont.testtask.service.PrescriptionService;
 import com.vaadin.annotations.Theme;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;

@@ -15,4 +15,6 @@ public interface DoctorDAO {
     void updateDoctor(Doctor doctor);
 
     void deleteDoctor(Doctor doctor);
+
+    List<String> buildStatistics();
 }

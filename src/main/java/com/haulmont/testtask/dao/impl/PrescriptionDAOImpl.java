@@ -108,13 +108,15 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
     }
 
     @Override
-    public List<Prescription> getPrescriptionByPatient(Patient patient) {
+    public List<Prescription> getPrescriptionByPatientName(String name) {
         DoctorDAO doctorDAO = new DoctorDAOImpl();
         PatientDAO patientDAO = new PatientDAOImpl();
         List<Prescription> list = new ArrayList<>();
         try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Patient = ?");
-            ps.setLong(1, patient.getId());
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select a.* from Prescription a INNER JOIN Patient b " +
+                    "on a.Patient = b.id " +
+                    "where b.Name like ?");
+            ps.setString(1, '%' + name + '%');
             ResultSet rs = ps.executeQuery();
             while (rs.next()){
                 Prescription prescription = new Prescription();
@@ -132,12 +134,13 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return list;
         }
         catch (SQLException e){
+            e.printStackTrace();
             return null;
         }
     }
 
     @Override
-    public List<Prescription> getPrescriptionByPriority(Priority priority) {
+    public List<Prescription> getPrescriptionByPriority(String priority) {
         DoctorDAO doctorDAO = new DoctorDAOImpl();
         PatientDAO patientDAO = new PatientDAOImpl();
         List<Prescription> list = new ArrayList<>();
@@ -171,8 +174,8 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
         PatientDAO patientDAO = new PatientDAOImpl();
         List<Prescription> list = new ArrayList<>();
         try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Description like (%?%)");
-            ps.setString(1, description);
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Description like ?");
+            ps.setString(1, "%" + description + "%");
             ResultSet rs = ps.executeQuery();
             while (rs.next()){
                 Prescription prescription = new Prescription();

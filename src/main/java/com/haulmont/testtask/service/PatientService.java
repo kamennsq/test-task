@@ -3,8 +3,7 @@ package com.haulmont.testtask.service;
 import com.haulmont.testtask.dao.PatientDAO;
 import com.haulmont.testtask.dao.impl.PatientDAOImpl;
 import com.haulmont.testtask.entity.Patient;
-import com.vaadin.data.Binder;
-import com.vaadin.data.validator.StringLengthValidator;
+import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
 public class PatientService {
     private VerticalLayout layout = new VerticalLayout();
     private PatientDAO patientDAO = new PatientDAOImpl();
-    private Binder<Patient> binder = new Binder<>(Patient.class);
+    private SimpleStringValidator stringValidator = new SimpleStringValidator();
     private TextField name = new TextField("Name");
     private TextField surname = new TextField("Surname");
     private TextField patronymic = new TextField("Patronymic");
@@ -20,6 +19,10 @@ public class PatientService {
     private Button editButton = new Button("Edit");
     private Button deleteButton;
     private Patient patient;
+    private boolean isNameValid = false;
+    private boolean isSurnameValid = false;
+    private boolean isPatronymicValid = false;
+    private boolean isPhoneNumberValid = false;
 
     public Layout getPatientsLayout() {
         constructLayoutComponents();
@@ -59,7 +62,11 @@ public class PatientService {
 
     private Button getConfirmCreationButton(){
         Button confirmCreation = new Button("OK");
-        confirmCreation.addClickListener(e -> interactWithTable("insert"));
+        confirmCreation.addClickListener(e ->{
+            if (areValuesValid()){
+                interactWithTable("insert");
+            }
+        });
         return confirmCreation;
     }
 
@@ -87,34 +94,75 @@ public class PatientService {
     private void toBuildExtraLayout(){
         layout.removeAllComponents();
 
+        Label nameLabel = new Label("Name should contain from 3 to 15 symbols");
+        Label surnameLabel = new Label("Surname should contain from 3 to 15 symbols");
+        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 symbols");
+        Label phoneLabel = new Label("Phone number should contain 6 integer numbers");
+        nameLabel.setVisible(false);
+        surnameLabel.setVisible(false);
+        patronymicLabel.setVisible(false);
+        phoneLabel.setVisible(false);
+
         layout.addComponent(new Label("Please, fill a new data for Patient"));
 
         layout.addComponent(name);
-        binder.forField(name)
-                .withValidator(new StringLengthValidator("Name should be from 2 to 12 symbols", 2, 12))
-                .bind("name");
+        name.addValueChangeListener(e ->{
+            isNameValid = stringValidator.isValidString(name.getValue());
+            if(!isNameValid){
+                nameLabel.setVisible(true);
+            }
+            else{
+                nameLabel.setVisible(false);
+            }
+        });
+        layout.addComponentAsFirst(nameLabel);
 
         layout.addComponent(surname);
-        binder.forField(surname)
-                .withValidator(new StringLengthValidator("Surname should be from 2 to 15 symbols", 2, 15))
-                .bind("surname");
+        surname.addValueChangeListener(e ->{
+            isSurnameValid = stringValidator.isValidString(surname.getValue());
+            if(!isSurnameValid){
+                surnameLabel.setVisible(true);
+            }
+            else{
+                surnameLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(surnameLabel);
 
         layout.addComponent(patronymic);
-        binder.forField(patronymic)
-                .withValidator(new StringLengthValidator("Patronymic should be from 2 to 15 symbols", 2, 15))
-                .bind("patronymic");
+        patronymic.addValueChangeListener(e ->{
+            isPatronymicValid = stringValidator.isValidString(patronymic.getValue());
+            if(!isPatronymicValid){
+                patronymicLabel.setVisible(true);
+            }
+            else{
+                patronymicLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(patronymicLabel);
 
         layout.addComponent(phoneNumber);
-        binder.forField(phoneNumber)
-                .withValidator(new StringLengthValidator("Phone number should 6 symbols", 6, 6))
-                .bind("phoneNumber");
+        phoneNumber.addValueChangeListener(e ->{
+            isPhoneNumberValid = stringValidator.isValidNumber(phoneNumber.getValue());
+            if(!isPhoneNumberValid){
+                phoneLabel.setVisible(true);
+            }
+            else{
+                phoneLabel.setVisible(false);
+            }
+        });
+        layout.addComponent(phoneLabel);
 
         layout.addComponent(getCancelButton());
     }
 
     private Button getConfirmEditButton(){
         Button button = new Button("Confirm");
-        button.addClickListener(e -> interactWithTable("update"));
+        button.addClickListener(e ->{
+            if(areValuesValid()){
+                interactWithTable("update");
+            }
+        });
         return button;
     }
 
@@ -155,5 +203,9 @@ public class PatientService {
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
+    }
+
+    private boolean areValuesValid(){
+        return isNameValid && isSurnameValid && isPatronymicValid && isPhoneNumberValid;
     }
 }
