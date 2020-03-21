@@ -41,7 +41,7 @@ public class DoctorService {
 
         Grid<Doctor> grid = new Grid<>(Doctor.class);
         grid.getColumn("id").setHidden(true);
-        grid.setColumnOrder("name", "surname", "patronymic", "specialization");
+        grid.setColumnOrder("surname", "name", "patronymic", "specialization");
         grid.setItems(doctors);
         grid.setSizeFull();
 
@@ -101,10 +101,10 @@ public class DoctorService {
     private void toBuildExtraLayout(){
         layout.removeAllComponents();
 
-        Label nameLabel = new Label("Name should contain from 3 to 15 symbols");
-        Label surnameLabel = new Label("Surname should contain from 3 to 15 symbols");
-        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 symbols");
-        Label specializationLabel = new Label("Specialization should contain from 3 to 15 symbols");
+        Label nameLabel = new Label("Name should contain from 3 to 15 letters");
+        Label surnameLabel = new Label("Surname should contain from 3 to 15 letters");
+        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 letters");
+        Label specializationLabel = new Label("Specialization should contain from 3 to 15 letters");
         nameLabel.setVisible(false);
         surnameLabel.setVisible(false);
         patronymicLabel.setVisible(false);

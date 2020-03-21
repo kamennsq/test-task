@@ -34,7 +34,7 @@ public class PatientService {
 
         Grid<Patient> grid = new Grid(Patient.class);
         grid.getColumn("id").setHidden(true);
-        grid.setColumnOrder("name", "surname", "patronymic", "phoneNumber");
+        grid.setColumnOrder("surname", "name", "patronymic", "phoneNumber");
         grid.setItems(patients);
         grid.setSizeFull();
 
@@ -94,9 +94,9 @@ public class PatientService {
     private void toBuildExtraLayout(){
         layout.removeAllComponents();
 
-        Label nameLabel = new Label("Name should contain from 3 to 15 symbols");
-        Label surnameLabel = new Label("Surname should contain from 3 to 15 symbols");
-        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 symbols");
+        Label nameLabel = new Label("Name should contain from 3 to 15 letters");
+        Label surnameLabel = new Label("Surname should contain from 3 to 15 letters");
+        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 letters");
         Label phoneLabel = new Label("Phone number should contain 6 integer numbers");
         nameLabel.setVisible(false);
         surnameLabel.setVisible(false);
