@@ -10,14 +10,21 @@ import java.util.List;
 
 public class PatientService {
     private VerticalLayout layout = new VerticalLayout();
+    private Window window = new Window("Please, fill a new data for Patient");
+    private VerticalLayout windowLayout = new VerticalLayout();
+
     private PatientDAO patientDAO = new PatientDAOImpl();
+
     private SimpleStringValidator stringValidator = new SimpleStringValidator();
+
     private TextField name = new TextField("Name");
     private TextField surname = new TextField("Surname");
     private TextField patronymic = new TextField("Patronymic");
     private TextField phoneNumber = new TextField("Phone Number");
+
     private Button editButton = new Button("Edit");
     private Button deleteButton;
+
     private Patient patient;
     private boolean isNameValid = false;
     private boolean isSurnameValid = false;
@@ -54,8 +61,8 @@ public class PatientService {
     private Button getCreateButton(){
         Button createButton = new Button("Create");
         createButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmCreationButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmCreationButton());
         });
         return createButton;
     }
@@ -81,79 +88,14 @@ public class PatientService {
     private Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmEditButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmEditButton());
             name.setValue(patient.getName());
             surname.setValue(patient.getSurname());
             patronymic.setValue(patient.getPatronymic());
             phoneNumber.setValue(patient.getPhoneNumber());
         });
         return editButton;
-    }
-
-    private void toBuildExtraLayout(){
-        layout.removeAllComponents();
-
-        Label nameLabel = new Label("Name should contain from 3 to 15 symbols");
-        Label surnameLabel = new Label("Surname should contain from 3 to 15 symbols");
-        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 symbols");
-        Label phoneLabel = new Label("Phone number should contain 6 integer numbers");
-        nameLabel.setVisible(false);
-        surnameLabel.setVisible(false);
-        patronymicLabel.setVisible(false);
-        phoneLabel.setVisible(false);
-
-        layout.addComponent(new Label("Please, fill a new data for Patient"));
-
-        layout.addComponent(name);
-        name.addValueChangeListener(e ->{
-            isNameValid = stringValidator.isValidString(name.getValue());
-            if(!isNameValid){
-                nameLabel.setVisible(true);
-            }
-            else{
-                nameLabel.setVisible(false);
-            }
-        });
-        layout.addComponentAsFirst(nameLabel);
-
-        layout.addComponent(surname);
-        surname.addValueChangeListener(e ->{
-            isSurnameValid = stringValidator.isValidString(surname.getValue());
-            if(!isSurnameValid){
-                surnameLabel.setVisible(true);
-            }
-            else{
-                surnameLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(surnameLabel);
-
-        layout.addComponent(patronymic);
-        patronymic.addValueChangeListener(e ->{
-            isPatronymicValid = stringValidator.isValidString(patronymic.getValue());
-            if(!isPatronymicValid){
-                patronymicLabel.setVisible(true);
-            }
-            else{
-                patronymicLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(patronymicLabel);
-
-        layout.addComponent(phoneNumber);
-        phoneNumber.addValueChangeListener(e ->{
-            isPhoneNumberValid = stringValidator.isValidNumber(phoneNumber.getValue());
-            if(!isPhoneNumberValid){
-                phoneLabel.setVisible(true);
-            }
-            else{
-                phoneLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(phoneLabel);
-
-        layout.addComponent(getCancelButton());
     }
 
     private Button getConfirmEditButton(){
@@ -203,9 +145,79 @@ public class PatientService {
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
+        UI.getCurrent().removeWindow(window);
     }
 
     private boolean areValuesValid(){
         return isNameValid && isSurnameValid && isPatronymicValid && isPhoneNumberValid;
+    }
+
+    private void toBuildModalWindow(){
+        UI.getCurrent().removeWindow(window);
+        windowLayout.removeAllComponents();
+        window.setWidthFull();
+        window.setClosable(false);
+        Label nameLabel = new Label("Name should contain from 3 to 15 letters");
+        Label surnameLabel = new Label("Surname should contain from 3 to 15 letters");
+        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 letters");
+        Label phoneNumberLabel = new Label("Phone Number should contain 6 numbers");
+        nameLabel.setVisible(false);
+        surnameLabel.setVisible(false);
+        patronymicLabel.setVisible(false);
+        phoneNumberLabel.setVisible(false);
+
+        windowLayout.addComponent(surname);
+        surname.addValueChangeListener(e ->{
+            isSurnameValid = stringValidator.isValidString(surname.getValue());
+            if(!isSurnameValid){
+                surnameLabel.setVisible(true);
+            }
+            else{
+                surnameLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(surnameLabel);
+
+        windowLayout.addComponent(name);
+        name.addValueChangeListener(e ->{
+            isNameValid = stringValidator.isValidString(name.getValue());
+            if(!isNameValid){
+                nameLabel.setVisible(true);
+            }
+            else{
+                nameLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(nameLabel);
+
+        windowLayout.addComponent(patronymic);
+        patronymic.addValueChangeListener(e ->{
+            isPatronymicValid = stringValidator.isValidString(patronymic.getValue());
+            if(!isPatronymicValid){
+                patronymicLabel.setVisible(true);
+            }
+            else{
+                patronymicLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(patronymicLabel);
+
+        windowLayout.addComponent(phoneNumber);
+        phoneNumber.addValueChangeListener(e ->{
+            isPhoneNumberValid = stringValidator.isValidNumber(phoneNumber.getValue());
+            if(!isPhoneNumberValid){
+                phoneNumberLabel.setVisible(true);
+            }
+            else{
+                phoneNumberLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(phoneNumberLabel);
+
+        windowLayout.addComponent(getCancelButton());
+
+        window.setContent(windowLayout);
+        window.setModal(true);
+        UI.getCurrent().addWindow(window);
     }
 }

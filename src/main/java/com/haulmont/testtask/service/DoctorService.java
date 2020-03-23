@@ -11,6 +11,8 @@ import java.util.List;
 
 public class DoctorService {
     private VerticalLayout layout = new VerticalLayout();
+    private Window window = new Window("Please, fill a new data for Doctor");
+    private VerticalLayout windowLayout = new VerticalLayout();
 
     private DoctorDAO doctorDAO = new DoctorDAOImpl();
 
@@ -61,8 +63,8 @@ public class DoctorService {
     private Button getCreateButton(){
         Button createButton = new Button("Create");
         createButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmCreationButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmCreationButton());
         });
         return createButton;
     }
@@ -88,79 +90,14 @@ public class DoctorService {
     private Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmEditButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmEditButton());
             name.setValue(doctor.getName());
             surname.setValue(doctor.getSurname());
             patronymic.setValue(doctor.getPatronymic());
             specialization.setValue(doctor.getSpecialization());
         });
         return editButton;
-    }
-
-    private void toBuildExtraLayout(){
-        layout.removeAllComponents();
-
-        Label nameLabel = new Label("Name should contain from 3 to 15 symbols");
-        Label surnameLabel = new Label("Surname should contain from 3 to 15 symbols");
-        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 symbols");
-        Label specializationLabel = new Label("Specialization should contain from 3 to 15 symbols");
-        nameLabel.setVisible(false);
-        surnameLabel.setVisible(false);
-        patronymicLabel.setVisible(false);
-        specializationLabel.setVisible(false);
-
-        layout.addComponent(new Label("Please, fill a new data for Patient"));
-
-        layout.addComponent(name);
-        name.addValueChangeListener(e ->{
-            isNameValid = stringValidator.isValidString(name.getValue());
-            if(!isNameValid){
-                nameLabel.setVisible(true);
-            }
-            else{
-                nameLabel.setVisible(false);
-            }
-        });
-        layout.addComponentAsFirst(nameLabel);
-
-        layout.addComponent(surname);
-        surname.addValueChangeListener(e ->{
-            isSurnameValid = stringValidator.isValidString(surname.getValue());
-            if(!isSurnameValid){
-                surnameLabel.setVisible(true);
-            }
-            else{
-                surnameLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(surnameLabel);
-
-        layout.addComponent(patronymic);
-        patronymic.addValueChangeListener(e ->{
-            isPatronymicValid = stringValidator.isValidString(patronymic.getValue());
-            if(!isPatronymicValid){
-                patronymicLabel.setVisible(true);
-            }
-            else{
-                patronymicLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(patronymicLabel);
-
-        layout.addComponent(specialization);
-        specialization.addValueChangeListener(e ->{
-            isSpecializationValid = stringValidator.isValidString(specialization.getValue());
-            if(!isSpecializationValid){
-                specializationLabel.setVisible(true);
-            }
-            else{
-                specializationLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(specializationLabel);
-
-        layout.addComponent(getCancelButton());
     }
 
     private Button getConfirmEditButton(){
@@ -227,9 +164,79 @@ public class DoctorService {
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
         layout.addComponent(getStatisticButton());
+        UI.getCurrent().removeWindow(window);
     }
 
     private boolean areValuesValid(){
         return isNameValid && isSurnameValid && isPatronymicValid && isSpecializationValid;
+    }
+
+    private void toBuildModalWindow(){
+        UI.getCurrent().removeWindow(window);
+        windowLayout.removeAllComponents();
+        window.setWidthFull();
+        window.setClosable(false);
+        Label nameLabel = new Label("Name should contain from 3 to 15 letters");
+        Label surnameLabel = new Label("Surname should contain from 3 to 15 letters");
+        Label patronymicLabel = new Label("Patronymic should contain from 3 to 15 letters");
+        Label specializationLabel = new Label("Specialization should contain from 3 to 15 letters");
+        nameLabel.setVisible(false);
+        surnameLabel.setVisible(false);
+        patronymicLabel.setVisible(false);
+        specializationLabel.setVisible(false);
+
+        windowLayout.addComponent(surname);
+        surname.addValueChangeListener(e ->{
+            isSurnameValid = stringValidator.isValidString(surname.getValue());
+            if(!isSurnameValid){
+                surnameLabel.setVisible(true);
+            }
+            else{
+                surnameLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(surnameLabel);
+
+        windowLayout.addComponent(name);
+        name.addValueChangeListener(e ->{
+            isNameValid = stringValidator.isValidString(name.getValue());
+            if(!isNameValid){
+                nameLabel.setVisible(true);
+            }
+            else{
+                nameLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(nameLabel);
+
+        windowLayout.addComponent(patronymic);
+        patronymic.addValueChangeListener(e ->{
+            isPatronymicValid = stringValidator.isValidString(patronymic.getValue());
+            if(!isPatronymicValid){
+                patronymicLabel.setVisible(true);
+            }
+            else{
+                patronymicLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(patronymicLabel);
+
+        windowLayout.addComponent(specialization);
+        specialization.addValueChangeListener(e ->{
+            isSpecializationValid = stringValidator.isValidString(specialization.getValue());
+            if(!isSpecializationValid){
+                specializationLabel.setVisible(true);
+            }
+            else{
+                specializationLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(specializationLabel);
+
+        windowLayout.addComponent(getCancelButton());
+
+        window.setContent(windowLayout);
+        window.setModal(true);
+        UI.getCurrent().addWindow(window);
     }
 }

@@ -14,6 +14,8 @@ import java.util.List;
 
 public class PrescriptionService {
     private VerticalLayout layout = new VerticalLayout();
+    private Window window = new Window("Please, fill a new data for Prescription");
+    private VerticalLayout windowLayout = new VerticalLayout();
 
     private PrescriptionDAO prescriptionDAO = new PrescriptionDAOImpl();
 
@@ -90,8 +92,8 @@ public class PrescriptionService {
     private Button getCreateButton(){
         Button createButton = new Button("Create");
         createButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmCreationButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmCreationButton());
         });
         return createButton;
     }
@@ -115,8 +117,8 @@ public class PrescriptionService {
     private Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmEditButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmEditButton());
             description.setValue(prescription.getDescription());
             patientName.setValue(prescription.getPatientFullName());
             doctorsName.setValue(prescription.getDoctorFullName());
@@ -125,58 +127,6 @@ public class PrescriptionService {
             expirationPeriod.setValue(String.valueOf(prescription.getExpirationPeriod()));
         });
         return editButton;
-    }
-
-    private void toBuildExtraLayout(){
-        layout.removeAllComponents();
-        Label descriptionLabel = new Label("Description length should be from 5 to 30 symbols");
-        Label expirationLabel = new Label("The field should contain values from 1 to 99");
-        Label priorityLabel = new Label("The field should contain one of following: CITO, NORMAL, STATIM");
-        descriptionLabel.setVisible(false);
-        expirationLabel.setVisible(false);
-        priorityLabel.setVisible(false);
-
-        layout.addComponent(new Label("Please, fill a new data for Prescription"));
-
-        layout.addComponent(description);
-        description.addValueChangeListener(e ->{
-            isValidDescription = stringValidator.isValidDescription(description.getValue());
-            if(!isValidDescription){
-                descriptionLabel.setVisible(true);
-            }
-            else{
-                descriptionLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(descriptionLabel);
-
-        layout.addComponent(expirationPeriod);
-        expirationPeriod.addValueChangeListener(e ->{
-            isValidExpirationPeriod = stringValidator.isValidDatePeriod(expirationPeriod.getValue());
-            if(!isValidExpirationPeriod){
-                expirationLabel.setVisible(true);
-            }
-            else{
-                expirationLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(expirationLabel);
-
-        layout.addComponent(getDoctorsList());
-        layout.addComponent(getPatientsList());
-
-        layout.addComponent(priority);
-        priority.addValueChangeListener(e ->{
-            isValidPriority = stringValidator.isValidPriority(priority.getValue().toUpperCase());
-            if(!isValidPriority){
-                priorityLabel.setVisible(true);
-            }
-            else{
-                priorityLabel.setVisible(false);
-            }
-        });
-
-        layout.addComponent(getCancelButton());
     }
 
     private Button getConfirmEditButton(){
@@ -245,6 +195,7 @@ public class PrescriptionService {
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
         layout.addComponentAsFirst(getFilterPanel());
+        UI.getCurrent().removeWindow(window);
     }
 
     private Grid<Doctor> getDoctorsList(){
@@ -422,5 +373,64 @@ public class PrescriptionService {
 
     private boolean areFilterValuesValid(){
         return isValidFilterPriority && isValidFilterDescription && isValidFilterPatientName;
+    }
+
+    private void toBuildModalWindow(){
+        UI.getCurrent().removeWindow(window);
+        windowLayout.removeAllComponents();
+        window.setWidthFull();
+        window.setHeight("600");
+        window.setClosable(false);
+        Label descriptionLabel = new Label("Description length should be from 5 to 30 symbols");
+        Label expirationLabel = new Label("The field should contain values from 1 to 99");
+        Label priorityLabel = new Label("The field should contain one of following: CITO, NORMAL, STATIM");
+        descriptionLabel.setVisible(false);
+        expirationLabel.setVisible(false);
+        priorityLabel.setVisible(false);
+
+        windowLayout.addComponent(description);
+        description.addValueChangeListener(e ->{
+            isValidDescription = stringValidator.isValidDescription(description.getValue());
+            if(!isValidDescription){
+                descriptionLabel.setVisible(true);
+            }
+            else{
+                descriptionLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(descriptionLabel);
+
+        windowLayout.addComponent(expirationPeriod);
+        expirationPeriod.addValueChangeListener(e ->{
+            isValidExpirationPeriod = stringValidator.isValidDatePeriod(expirationPeriod.getValue());
+            if(!isValidExpirationPeriod){
+                expirationLabel.setVisible(true);
+            }
+            else{
+                expirationLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(expirationLabel);
+
+        windowLayout.addComponent(getDoctorsList());
+        windowLayout.addComponent(getPatientsList());
+
+        windowLayout.addComponent(priority);
+        priority.addValueChangeListener(e ->{
+            isValidPriority = stringValidator.isValidPriority(priority.getValue().toUpperCase());
+            if(!isValidPriority){
+                priorityLabel.setVisible(true);
+            }
+            else{
+                priorityLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(priorityLabel);
+
+        windowLayout.addComponent(getCancelButton());
+
+        window.setContent(windowLayout);
+        window.setModal(true);
+        UI.getCurrent().addWindow(window);
     }
 }
