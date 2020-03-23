@@ -8,6 +8,8 @@ import com.haulmont.testtask.entity.Doctor;
 import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.entity.Priority;
+import com.haulmont.testtask.exception.ImpossibleToPerformOperation;
+import com.haulmont.testtask.exception.prescription.EmptyPrescriptionCollection;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -44,7 +46,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return prescription;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -74,7 +76,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return list;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -103,7 +105,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return list;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -131,11 +133,15 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setPatientFullName();
                 list.add(prescription);
             }
-            return list;
+            if(!list.isEmpty()) {
+                return list;
+            }
+            else{
+                throw new EmptyPrescriptionCollection();
+            }
         }
         catch (SQLException e){
-            e.printStackTrace();
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -161,10 +167,15 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setPatientFullName();
                 list.add(prescription);
             }
-            return list;
+            if(!list.isEmpty()) {
+                return list;
+            }
+            else{
+                throw new EmptyPrescriptionCollection();
+            }
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -193,7 +204,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return list;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -218,7 +229,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -230,7 +241,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -246,7 +257,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 

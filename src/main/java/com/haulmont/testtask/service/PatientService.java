@@ -3,6 +3,7 @@ package com.haulmont.testtask.service;
 import com.haulmont.testtask.dao.PatientDAO;
 import com.haulmont.testtask.dao.impl.PatientDAOImpl;
 import com.haulmont.testtask.entity.Patient;
+import com.haulmont.testtask.exception.patient.ImpossibleToDeletePatient;
 import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
@@ -129,7 +130,15 @@ public class PatientService {
         deleteButton = new Button("Delete");
         deleteButton.setEnabled(false);
         deleteButton.addClickListener(e -> {
-            interactWithTable("delete");
+            try {
+                interactWithTable("delete");
+            }
+            catch (ImpossibleToDeletePatient exception){
+                Window alertWindow = new Window("Error");
+                alertWindow.setModal(true);
+                alertWindow.setContent(new Label(exception.getMessage()));
+                UI.getCurrent().addWindow(alertWindow);
+            }
         });
         return deleteButton;
     }

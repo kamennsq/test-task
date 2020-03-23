@@ -6,6 +6,7 @@ import com.haulmont.testtask.entity.Doctor;
 import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.entity.Priority;
+import com.haulmont.testtask.exception.prescription.EmptyPrescriptionCollection;
 import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
@@ -265,7 +266,7 @@ public class PrescriptionService {
         Button applyButton = new Button("Apply");
         Button clearFilterButton = new Button("Reset Filter");
 
-        TextField patientNameField = new TextField("Patient");
+        TextField patientNameField = new TextField("Patient's Name");
         TextField descriptionField = new TextField("Description");
         TextField priorityField = new TextField("Priority");
 
@@ -335,15 +336,39 @@ public class PrescriptionService {
             if(areFilterValuesValid()) {
                 if (patientNameField.getValue().length() > 0) {
                     patientNameInFilter = patientNameField.getValue();
-                    interactWithTable("showByPatient");
+                    try {
+                        interactWithTable("showByPatient");
+                    }
+                    catch (EmptyPrescriptionCollection exception){
+                        Window alertWindow = new Window("Error");
+                        alertWindow.setModal(true);
+                        alertWindow.setContent(new Label(exception.getMessage()));
+                        UI.getCurrent().addWindow(alertWindow);
+                    }
                 }
                 if (descriptionField.getValue().length() > 0) {
                     descriptionInFilter = descriptionField.getValue();
-                    interactWithTable("showByDescription");
+                    try {
+                        interactWithTable("showByDescription");
+                    }
+                    catch (EmptyPrescriptionCollection exception){
+                        Window alertWindow = new Window("Error");
+                        alertWindow.setModal(true);
+                        alertWindow.setContent(new Label(exception.getMessage()));
+                        UI.getCurrent().addWindow(alertWindow);
+                    }
                 }
                 if (priorityField.getValue().length() > 0) {
                     priorityInFilter = priorityField.getValue().toUpperCase();
-                    interactWithTable("showByPriority");
+                    try {
+                        interactWithTable("showByPriority");
+                    }
+                    catch (EmptyPrescriptionCollection exception){
+                        Window alertWindow = new Window("Error");
+                        alertWindow.setModal(true);
+                        alertWindow.setContent(new Label(exception.getMessage()));
+                        UI.getCurrent().addWindow(alertWindow);
+                    }
                 }
             }
         });

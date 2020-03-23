@@ -4,6 +4,8 @@ import com.haulmont.testtask.dao.DoctorDAO;
 import com.haulmont.testtask.dao.connection.MyConnection;
 import com.haulmont.testtask.entity.Doctor;
 import com.haulmont.testtask.entity.Prescription;
+import com.haulmont.testtask.exception.ImpossibleToPerformOperation;
+import com.haulmont.testtask.exception.doctor.ImpossibleToDeleteDoctor;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,7 +33,7 @@ public class DoctorDAOImpl implements DoctorDAO {
             return list;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -46,7 +48,7 @@ public class DoctorDAOImpl implements DoctorDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -68,7 +70,7 @@ public class DoctorDAOImpl implements DoctorDAO {
             return doctor;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -91,7 +93,7 @@ public class DoctorDAOImpl implements DoctorDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -103,7 +105,7 @@ public class DoctorDAOImpl implements DoctorDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToDeleteDoctor();
         }
     }
 
@@ -124,8 +126,7 @@ public class DoctorDAOImpl implements DoctorDAO {
             return list;
         }
         catch (SQLException e){
-            e.printStackTrace();
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 

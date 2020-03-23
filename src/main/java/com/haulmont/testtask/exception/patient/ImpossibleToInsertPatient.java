@@ -1,4 +1,4 @@
-package com.haulmont.testtask.exception;
+package com.haulmont.testtask.exception.patient;
 
 public class ImpossibleToInsertPatient extends RuntimeException {
 

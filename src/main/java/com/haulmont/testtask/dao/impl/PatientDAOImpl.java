@@ -3,8 +3,10 @@ package com.haulmont.testtask.dao.impl;
 import com.haulmont.testtask.dao.PatientDAO;
 import com.haulmont.testtask.dao.connection.MyConnection;
 import com.haulmont.testtask.entity.Patient;
-import com.haulmont.testtask.exception.ImpossibleToInsertPatient;
-import com.haulmont.testtask.exception.PatientNotFound;
+import com.haulmont.testtask.exception.patient.ImpossibleToDeletePatient;
+import com.haulmont.testtask.exception.patient.ImpossibleToInsertPatient;
+import com.haulmont.testtask.exception.ImpossibleToPerformOperation;
+import com.haulmont.testtask.exception.patient.PatientNotFound;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +34,7 @@ public class PatientDAOImpl implements PatientDAO {
             return list;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -68,9 +70,7 @@ public class PatientDAOImpl implements PatientDAO {
             }
             return patient;
         } catch (SQLException e) {
-            //e.printStackTrace();
             throw new PatientNotFound();
-            //return null;
         }
     }
 
@@ -93,7 +93,7 @@ public class PatientDAOImpl implements PatientDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -105,7 +105,7 @@ public class PatientDAOImpl implements PatientDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToDeletePatient();
         }
     }
 }
