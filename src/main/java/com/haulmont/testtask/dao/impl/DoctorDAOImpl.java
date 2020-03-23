@@ -3,10 +3,10 @@ package com.haulmont.testtask.dao.impl;
 import com.haulmont.testtask.dao.DoctorDAO;
 import com.haulmont.testtask.dao.connection.MyConnection;
 import com.haulmont.testtask.entity.Doctor;
-import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.exception.ImpossibleToPerformOperation;
 import com.haulmont.testtask.exception.doctor.ImpossibleToDeleteDoctor;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -113,15 +113,45 @@ public class DoctorDAOImpl implements DoctorDAO {
     public List<String> buildStatistics() {
         List<String> list = new ArrayList<>();
         try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("select b.Name, count(a.Id) as count " +
-                    "from Prescription a, Doctor b " +
-                    "where a.CreationDate = sysdate " +
-                    "and a.Doctor = b.Id " +
-                    "group by a.Doctor, b.Id");
+            PreparedStatement oldestDate = MyConnection.connection.prepareStatement("select min(CreationDate) as result from Prescription");
+            ResultSet oldestDateResult = oldestDate.executeQuery();
+            oldestDateResult.next();
+            PreparedStatement newestDate = MyConnection.connection.prepareStatement("select max(CreationDate) as result from Prescription");
+            ResultSet newestDateResult = newestDate.executeQuery();
+            newestDateResult.next();
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select b.Name, a.CreationDate ,count(a.Id) as count " +
+                    "from Prescription a " +
+                    "INNER JOIN Doctor b " +
+                    "ON a.Doctor = b.Id " +
+                    "where a.CreationDate between ? and ? " +
+                    "group by a.CreationDate, b.Id");
+            ps.setDate(1, oldestDateResult.getDate("result"));
+            ps.setDate(2, newestDateResult.getDate("result"));
             ResultSet rs = ps.executeQuery();
             while (rs.next()){
-                String result = rs.getString("Name") + " " + rs.getInt("count");
+                String result = rs.getString("Name") + " " + rs.getInt("count") + " " + rs.getString("CreationDate");
+                System.out.println(result);
                 list.add(result);
+            }
+            return list;
+        }
+        catch (SQLException e){
+            //throw new ImpossibleToPerformOperation();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public List<Date> datesList() {
+        List<Date> list = new ArrayList<>();
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select CreationDate from Prescription " +
+                    "group by CreationDate " +
+                    "order by CreationDate ASC");
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                list.add(rs.getDate("CreationDate"));
             }
             return list;
         }
@@ -129,6 +159,5 @@ public class DoctorDAOImpl implements DoctorDAO {
             throw new ImpossibleToPerformOperation();
         }
     }
-
 
 }

@@ -80,34 +80,34 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
         }
     }
 
-    @Override
-    public List<Prescription> getPrescriptionsByDoctor(Doctor doctor) {
-        DoctorDAO doctorDAO = new DoctorDAOImpl();
-        PatientDAO patientDAO = new PatientDAOImpl();
-        List<Prescription> list = new ArrayList<>();
-        try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Doctor = ?");
-            ps.setLong(1, doctor.getId());
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()){
-                Prescription prescription = new Prescription();
-                prescription.setId(rs.getLong("id"));
-                prescription.setDescription(rs.getString("Description"));
-                prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
-                prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setCreationDate(rs.getDate("CreationDate"));
-                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
-                prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
-                prescription.setDoctorFullName();
-                prescription.setPatientFullName();
-                list.add(prescription);
-            }
-            return list;
-        }
-        catch (SQLException e){
-            throw new ImpossibleToPerformOperation();
-        }
-    }
+//    @Override
+//    public List<Prescription> getPrescriptionsByDoctor(Doctor doctor) {
+//        DoctorDAO doctorDAO = new DoctorDAOImpl();
+//        PatientDAO patientDAO = new PatientDAOImpl();
+//        List<Prescription> list = new ArrayList<>();
+//        try{
+//            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Doctor = ?");
+//            ps.setLong(1, doctor.getId());
+//            ResultSet rs = ps.executeQuery();
+//            while (rs.next()){
+//                Prescription prescription = new Prescription();
+//                prescription.setId(rs.getLong("id"));
+//                prescription.setDescription(rs.getString("Description"));
+//                prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
+//                prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
+//                prescription.setCreationDate(rs.getDate("CreationDate"));
+//                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
+//                prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
+//                prescription.setDoctorFullName();
+//                prescription.setPatientFullName();
+//                list.add(prescription);
+//            }
+//            return list;
+//        }
+//        catch (SQLException e){
+//            throw new ImpossibleToPerformOperation();
+//        }
+//    }
 
     @Override
     public List<Prescription> getPrescriptionByPatientName(String name) {

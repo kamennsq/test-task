@@ -7,6 +7,8 @@ import com.haulmont.testtask.exception.doctor.ImpossibleToDeleteDoctor;
 import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
+import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -81,11 +83,11 @@ public class DoctorService {
     }
 
     private Button getCancelButton(){
-        Button confirmCreation = new Button("Cancel");
-        confirmCreation.addClickListener(e ->{
+        Button cancelButton = new Button("Cancel");
+        cancelButton.addClickListener(e ->{
             constructLayoutComponents();
         });
-        return confirmCreation;
+        return cancelButton;
     }
 
     private Button getEditButton(){
@@ -153,12 +155,23 @@ public class DoctorService {
     }
 
     private void toBuildStatistics(){
-        List<String> list = doctorDAO.buildStatistics();
-        Grid grid = new Grid();
-        grid.setData(list);
-        //grid.setItems(list);
+        Button backToLayout = new Button("Back");
+        List<Date> dateList = doctorDAO.datesList();
+        List<Doctor> doctorList = doctorDAO.getDoctors();
+        GridLayout statistics = new GridLayout(dateList.size()+1, doctorList.size()+1);
+        backToLayout.addClickListener(e ->{
+            constructLayoutComponents();
+        });
+        statistics.addComponent(new Label("Doctor/Date"),0,0);
+        for (int i = 0; i < dateList.size(); i++){
+            statistics.addComponent(new Label(dateList.get(i).toString()), i+1, 0);
+        }
+        for (int i = 0; i < doctorList.size(); i++){
+            statistics.addComponent(new Label(doctorList.get(i).getName()), 0, i+1);
+        }
         layout.removeAllComponents();
-        layout.addComponent(grid);
+        layout.addComponent(statistics);
+        layout.addComponent(backToLayout);
     }
 
     private void constructLayoutComponents(){

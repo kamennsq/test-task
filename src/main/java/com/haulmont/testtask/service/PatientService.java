@@ -79,11 +79,11 @@ public class PatientService {
     }
 
     private Button getCancelButton(){
-        Button confirmCreation = new Button("Cancel");
-        confirmCreation.addClickListener(e ->{
+        Button cancelButton = new Button("Cancel");
+        cancelButton.addClickListener(e ->{
             constructLayoutComponents();
         });
-        return confirmCreation;
+        return cancelButton;
     }
 
     private Button getEditButton(){

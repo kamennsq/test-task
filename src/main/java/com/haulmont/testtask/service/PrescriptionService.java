@@ -110,9 +110,9 @@ public class PrescriptionService {
     }
 
     private Button getCancelButton(){
-        Button confirmCreation = new Button("Cancel");
-        confirmCreation.addClickListener(e -> constructLayoutComponents());
-        return confirmCreation;
+        Button cancelButton = new Button("Cancel");
+        cancelButton.addClickListener(e -> constructLayoutComponents());
+        return cancelButton;
     }
 
     private Button getEditButton(){

@@ -15,7 +15,7 @@ public interface PrescriptionDAO {
 
     List<Prescription> getPrescriptions();
 
-    List<Prescription> getPrescriptionsByDoctor(Doctor doctor);
+    //List<Prescription> getPrescriptionsByDoctor(Doctor doctor);
 
     List<Prescription> getPrescriptionByPatientName(String name);
 

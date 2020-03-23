@@ -48,9 +48,11 @@ public class MyConnection {
                 connection.createStatement().executeUpdate("create sequence idSequence start with 1 increment by 1");
                 connection.createStatement().executeUpdate("insert into Patient values (next value for idSequence, 'Peter', 'Smith', 'None', '4545454')");
                 connection.createStatement().executeUpdate("insert into Doctor values (next value for idSequence, 'Ivan', 'Post', 'None', 'Surgeon')");
-                connection.createStatement().executeUpdate("insert into Prescription values (next value for idSequence, 'To kill the pain', 1, 2, 'NORMAL', sysdate, 12)");
+                connection.createStatement().executeUpdate("insert into Prescription values (next value for idSequence, 'To kill the pain', 1, 2, 'NORMAL', to_date('20.03.20', 'DD.MM.YY'), 12)");
                 connection.createStatement().executeUpdate("insert into Patient values (next value for idSequence, 'Andrew', 'Smith', 'None', '4545454')");
                 connection.createStatement().executeUpdate("insert into Prescription values (next value for idSequence, 'New', 4, 2, 'CITO', sysdate, 1)");
+                connection.createStatement().executeUpdate("insert into Doctor values (next value for idSequence, 'John', 'Post', 'None', 'Therapist')");
+                connection.createStatement().executeUpdate("insert into Prescription values (next value for idSequence, 'Brand New', 4, 6, 'STATIM', sysdate, 1)");
                 connection.createStatement().execute("CHECKPOINT");
             }
             catch (SQLException e) {
