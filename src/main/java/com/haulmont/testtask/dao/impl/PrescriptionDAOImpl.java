@@ -8,6 +8,8 @@ import com.haulmont.testtask.entity.Doctor;
 import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.entity.Priority;
+import com.haulmont.testtask.exception.ImpossibleToPerformOperation;
+import com.haulmont.testtask.exception.prescription.EmptyPrescriptionCollection;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -44,7 +46,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return prescription;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -74,38 +76,38 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return list;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
-    @Override
-    public List<Prescription> getPrescriptionsByDoctor(Doctor doctor) {
-        DoctorDAO doctorDAO = new DoctorDAOImpl();
-        PatientDAO patientDAO = new PatientDAOImpl();
-        List<Prescription> list = new ArrayList<>();
-        try{
-            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Doctor = ?");
-            ps.setLong(1, doctor.getId());
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()){
-                Prescription prescription = new Prescription();
-                prescription.setId(rs.getLong("id"));
-                prescription.setDescription(rs.getString("Description"));
-                prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
-                prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
-                prescription.setCreationDate(rs.getDate("CreationDate"));
-                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
-                prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
-                prescription.setDoctorFullName();
-                prescription.setPatientFullName();
-                list.add(prescription);
-            }
-            return list;
-        }
-        catch (SQLException e){
-            return null;
-        }
-    }
+//    @Override
+//    public List<Prescription> getPrescriptionsByDoctor(Doctor doctor) {
+//        DoctorDAO doctorDAO = new DoctorDAOImpl();
+//        PatientDAO patientDAO = new PatientDAOImpl();
+//        List<Prescription> list = new ArrayList<>();
+//        try{
+//            PreparedStatement ps = MyConnection.connection.prepareStatement("select * from Prescription where Doctor = ?");
+//            ps.setLong(1, doctor.getId());
+//            ResultSet rs = ps.executeQuery();
+//            while (rs.next()){
+//                Prescription prescription = new Prescription();
+//                prescription.setId(rs.getLong("id"));
+//                prescription.setDescription(rs.getString("Description"));
+//                prescription.setPatient(patientDAO.getPatientById(rs.getLong("Patient")));
+//                prescription.setDoctor(doctorDAO.getDoctorById(rs.getLong("Doctor")));
+//                prescription.setCreationDate(rs.getDate("CreationDate"));
+//                prescription.setExpirationPeriod(rs.getInt("ExpirationPeriod"));
+//                prescription.setPriority(Priority.valueOf(rs.getString("Priority")));
+//                prescription.setDoctorFullName();
+//                prescription.setPatientFullName();
+//                list.add(prescription);
+//            }
+//            return list;
+//        }
+//        catch (SQLException e){
+//            throw new ImpossibleToPerformOperation();
+//        }
+//    }
 
     @Override
     public List<Prescription> getPrescriptionByPatientName(String name) {
@@ -131,11 +133,15 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setPatientFullName();
                 list.add(prescription);
             }
-            return list;
+            if(!list.isEmpty()) {
+                return list;
+            }
+            else{
+                throw new EmptyPrescriptionCollection();
+            }
         }
         catch (SQLException e){
-            e.printStackTrace();
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -161,10 +167,15 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
                 prescription.setPatientFullName();
                 list.add(prescription);
             }
-            return list;
+            if(!list.isEmpty()) {
+                return list;
+            }
+            else{
+                throw new EmptyPrescriptionCollection();
+            }
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -193,7 +204,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             return list;
         }
         catch (SQLException e){
-            return null;
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -218,7 +229,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -230,7 +241,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 
@@ -246,7 +257,7 @@ public class PrescriptionDAOImpl implements PrescriptionDAO {
             ps.executeUpdate();
         }
         catch (SQLException e){
-            e.printStackTrace();
+            throw new ImpossibleToPerformOperation();
         }
     }
 

@@ -1,10 +1,11 @@
 package com.haulmont.testtask.dao.connection;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 
 public class MyConnection {
@@ -21,37 +22,17 @@ public class MyConnection {
     private Connection getConnection(){
         if (connection == null) {
             try {
+                InputStream inputStream = new BufferedInputStream(new FileInputStream("src/main/resources/script.sql"));
                 Class.forName("org.hsqldb.jdbc.JDBCDriver");
-                connection = DriverManager.getConnection("jdbc:hsqldb:mem:mymemdb", "SA", "");
-                connection.createStatement().executeUpdate("create table if not exists Patient (ID BIGINT NOT NULL, " +
-                        "Name VARCHAR(10) NOT NULL, " +
-                        "Surname VARCHAR(10) NOT NULL, " +
-                        "Patronymic VARCHAR(20) NOT NULL, " +
-                        "PhoneNumber VARCHAR(10) NOT NULL, " +
-                        "PRIMARY KEY(ID))");
-                connection.createStatement().executeUpdate("create table if not exists Doctor (ID BIGINT NOT NULL, " +
-                        "Name VARCHAR(10) NOT NULL, " +
-                        "Surname VARCHAR(10) NOT NULL, " +
-                        "Patronymic VARCHAR(20) NOT NULL, " +
-                        "Specialization VARCHAR(20) NOT NULL, " +
-                        "PRIMARY KEY(ID))");
-                connection.createStatement().executeUpdate("create table if not exists Prescription (ID BIGINT NOT NULL, " +
-                        "Description VARCHAR(50) NOT NULL, " +
-                        "Patient BIGINT NOT NULL, " +
-                        "Doctor BIGINT NOT NULL, " +
-                        "Priority VARCHAR(10) NOT NULL, " +
-                        "CreationDate DATE NOT NULL, " +
-                        "ExpirationPeriod INTEGER NOT NULL, " +
-                        "PRIMARY KEY(ID), " +
-                        "FOREIGN KEY (Doctor) REFERENCES Doctor(Id), " +
-                        "FOREIGN KEY (Patient) REFERENCES Patient(Id))");
-                connection.createStatement().executeUpdate("create sequence idSequence start with 1 increment by 1");
-                connection.createStatement().executeUpdate("insert into Patient values (next value for idSequence, 'Peter', 'Smith', 'None', '4545454')");
-                connection.createStatement().executeUpdate("insert into Doctor values (next value for idSequence, 'Ivan', 'Post', 'None', 'Surgeon')");
-                connection.createStatement().executeUpdate("insert into Prescription values (next value for idSequence, 'To kill the pain', 1, 2, 'NORMAL', sysdate, 12)");
-                connection.createStatement().executeUpdate("insert into Patient values (next value for idSequence, 'Andrew', 'Smith', 'None', '4545454')");
-                connection.createStatement().executeUpdate("insert into Prescription values (next value for idSequence, 'New', 4, 2, 'CITO', sysdate, 1)");
-                connection.createStatement().execute("CHECKPOINT");
+                connection = DriverManager.getConnection("jdbc:hsqldb:mem:testdb", "SA", "");
+                Scanner s = new Scanner(inputStream).useDelimiter(";");
+                String result;
+                while (s.hasNext()){
+                    result = s.next();
+                    PreparedStatement ps = connection.prepareStatement(result);
+                    ps.executeUpdate();
+                }
+                inputStream.close();
             }
             catch (SQLException e) {
                 System.out.println("Unable to get connection");
@@ -59,6 +40,9 @@ public class MyConnection {
             }
             catch (ClassNotFoundException e){
                 System.out.println("Driver was not found");
+            }
+            catch (IOException e){
+                e.printStackTrace();
             }
         }
         return connection;

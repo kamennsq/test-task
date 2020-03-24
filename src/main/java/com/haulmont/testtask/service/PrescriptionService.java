@@ -1,11 +1,13 @@
 package com.haulmont.testtask.service;
 
+import com.haulmont.testtask.MainUI;
 import com.haulmont.testtask.dao.PrescriptionDAO;
 import com.haulmont.testtask.dao.impl.PrescriptionDAOImpl;
 import com.haulmont.testtask.entity.Doctor;
 import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.entity.Priority;
+import com.haulmont.testtask.exception.prescription.EmptyPrescriptionCollection;
 import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
@@ -14,22 +16,24 @@ import java.util.List;
 
 public class PrescriptionService {
     private VerticalLayout layout = new VerticalLayout();
+    private Window window = new Window("Пожалуйста, заполните поля для создания/редактирования Рецепта");
+    private VerticalLayout windowLayout = new VerticalLayout();
 
     private PrescriptionDAO prescriptionDAO = new PrescriptionDAOImpl();
 
     private SimpleStringValidator stringValidator = new SimpleStringValidator();
 
-    private TextField description = new TextField("Description");
-    private TextField patientName = new TextField("Patient's name");
-    private TextField doctorsName = new TextField("Doctor's name");
-    private TextField priority = new TextField("Priority");
-    private TextField creationDate = new TextField("Creation Date");
-    private TextField expirationPeriod = new TextField("Expiration Period");
+    private TextField description = new TextField("Описание");
+    private TextField patientName = new TextField("Имя пациента");
+    private TextField doctorsName = new TextField("Имя доктора");
+    private TextField priority = new TextField("Приоритет");
+    private TextField creationDate = new TextField("Дата создания");
+    private TextField expirationPeriod = new TextField("Срок действия (мес.)");
 
     private Grid<Doctor> doctors;
     private Grid<Patient> patients;
 
-    private Button editButton = new Button("Edit");
+    private Button editButton = new Button("Редактировать");
     private Button deleteButton;
 
     private Prescription prescription;
@@ -71,6 +75,12 @@ public class PrescriptionService {
         grid.getColumn("doctor").setHidden(true);
         grid.getColumn("patient").setHidden(true);
         grid.setColumnOrder("doctorFullName", "patientFullName", "priority", "description", "creationDate", "expirationPeriod");
+        grid.getColumn("doctorFullName").setCaption("Полное имя доктора");
+        grid.getColumn("patientFullName").setCaption("Полное имя пациента");
+        grid.getColumn("priority").setCaption("Приоритет");
+        grid.getColumn("description").setCaption("Описание");
+        grid.getColumn("creationDate").setCaption("Дата создания");
+        grid.getColumn("expirationPeriod").setCaption("Срок действия (мес.)");
         grid.setItems(prescriptions);
         grid.setSizeFull();
 
@@ -88,16 +98,16 @@ public class PrescriptionService {
     }
 
     private Button getCreateButton(){
-        Button createButton = new Button("Create");
+        Button createButton = new Button("Создать");
         createButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmCreationButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmCreationButton());
         });
         return createButton;
     }
 
     private Button getConfirmCreationButton(){
-        Button confirmCreation = new Button("OK");
+        Button confirmCreation = new Button("ОК");
         confirmCreation.addClickListener(e ->{
             if(areValuesValid()){
                 interactWithTable("insert");
@@ -107,16 +117,16 @@ public class PrescriptionService {
     }
 
     private Button getCancelButton(){
-        Button confirmCreation = new Button("Cancel");
-        confirmCreation.addClickListener(e -> constructLayoutComponents());
-        return confirmCreation;
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(e -> constructLayoutComponents());
+        return cancelButton;
     }
 
     private Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
-            toBuildExtraLayout();
-            layout.addComponent(getConfirmEditButton());
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmEditButton());
             description.setValue(prescription.getDescription());
             patientName.setValue(prescription.getPatientFullName());
             doctorsName.setValue(prescription.getDoctorFullName());
@@ -127,60 +137,8 @@ public class PrescriptionService {
         return editButton;
     }
 
-    private void toBuildExtraLayout(){
-        layout.removeAllComponents();
-        Label descriptionLabel = new Label("Description length should be from 5 to 30 symbols");
-        Label expirationLabel = new Label("The field should contain values from 1 to 99");
-        Label priorityLabel = new Label("The field should contain one of following: CITO, NORMAL, STATIM");
-        descriptionLabel.setVisible(false);
-        expirationLabel.setVisible(false);
-        priorityLabel.setVisible(false);
-
-        layout.addComponent(new Label("Please, fill a new data for Prescription"));
-
-        layout.addComponent(description);
-        description.addValueChangeListener(e ->{
-            isValidDescription = stringValidator.isValidDescription(description.getValue());
-            if(!isValidDescription){
-                descriptionLabel.setVisible(true);
-            }
-            else{
-                descriptionLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(descriptionLabel);
-
-        layout.addComponent(expirationPeriod);
-        expirationPeriod.addValueChangeListener(e ->{
-            isValidExpirationPeriod = stringValidator.isValidDatePeriod(expirationPeriod.getValue());
-            if(!isValidExpirationPeriod){
-                expirationLabel.setVisible(true);
-            }
-            else{
-                expirationLabel.setVisible(false);
-            }
-        });
-        layout.addComponent(expirationLabel);
-
-        layout.addComponent(getDoctorsList());
-        layout.addComponent(getPatientsList());
-
-        layout.addComponent(priority);
-        priority.addValueChangeListener(e ->{
-            isValidPriority = stringValidator.isValidPriority(priority.getValue().toUpperCase());
-            if(!isValidPriority){
-                priorityLabel.setVisible(true);
-            }
-            else{
-                priorityLabel.setVisible(false);
-            }
-        });
-
-        layout.addComponent(getCancelButton());
-    }
-
     private Button getConfirmEditButton(){
-        Button button = new Button("Confirm");
+        Button button = new Button("ОК");
         button.addClickListener(e ->{
             if(areValuesValid()){
                 interactWithTable("update");
@@ -221,7 +179,7 @@ public class PrescriptionService {
     }
 
     private Button getDeleteButton(){
-        deleteButton = new Button("Delete");
+        deleteButton = new Button("Удалить");
         deleteButton.setEnabled(false);
         deleteButton.addClickListener(e -> interactWithTable("delete"));
         return deleteButton;
@@ -245,6 +203,8 @@ public class PrescriptionService {
         layout.addComponent(getEditButton());
         layout.addComponent(getDeleteButton());
         layout.addComponentAsFirst(getFilterPanel());
+        layout.addComponent(getBackButton());
+        UI.getCurrent().removeWindow(window);
     }
 
     private Grid<Doctor> getDoctorsList(){
@@ -253,8 +213,12 @@ public class PrescriptionService {
 
         doctors.getColumn("id").setHidden(true);
         doctors.setColumnOrder("name", "surname", "patronymic", "specialization");
+        doctors.getColumn("name").setCaption("Имя");
+        doctors.getColumn("surname").setCaption("Фамилия");
+        doctors.getColumn("patronymic").setCaption("Отчество");
+        doctors.getColumn("specialization").setCaption("Специальность");
         doctors.setItems(doctorsList);
-        doctors.setCaption("Doctors");
+        doctors.setCaption("Список докторов");
 
         if(prescription != null) {
             doctors.select(prescription.getDoctor());
@@ -278,8 +242,12 @@ public class PrescriptionService {
 
         patients.getColumn("id").setHidden(true);
         patients.setColumnOrder("name", "surname", "patronymic", "phoneNumber");
+        patients.getColumn("name").setCaption("Имя");
+        patients.getColumn("surname").setCaption("Фамилия");
+        patients.getColumn("patronymic").setCaption("Отчество");
+        patients.getColumn("phoneNumber").setCaption("Номер телефона");
         patients.setItems(patientsList);
-        patients.setCaption("Patients");
+        patients.setCaption("Список пациентов");
 
         if(prescription != null) {
             patients.select(prescription.getPatient());
@@ -300,23 +268,23 @@ public class PrescriptionService {
     }
 
     private Panel getFilterPanel(){
-        Panel panel = new Panel("Filter");
+        Panel panel = new Panel("Фильтр");
 
-        Label patientLabel = new Label("Name should contain from 3 to 15 symbols");
-        Label descriptionLabel = new Label("Description should contain from 5 to 30 symbols");
-        Label priorityLabel = new Label("Priority should be one of the following: CITO, NORMAL, STATIM");
+        Label patientLabel = new Label("Имя должно содержать от 3-ех до 15-ти букв");
+        Label descriptionLabel = new Label("Описание должно содержать от 5-ти до 30-ти любых символов");
+        Label priorityLabel = new Label("Приоритет должен быть один из следующих: CITO, NORMAL, STATIM");
         patientLabel.setVisible(false);
         descriptionLabel.setVisible(false);
         priorityLabel.setVisible(false);
 
         FormLayout content = new FormLayout();
 
-        Button applyButton = new Button("Apply");
-        Button clearFilterButton = new Button("Reset Filter");
+        Button applyButton = new Button("Применить");
+        Button clearFilterButton = new Button("Сбросить фильтр");
 
-        TextField patientNameField = new TextField("Patient");
-        TextField descriptionField = new TextField("Description");
-        TextField priorityField = new TextField("Priority");
+        TextField patientNameField = new TextField("Имя пациента");
+        TextField descriptionField = new TextField("Описание");
+        TextField priorityField = new TextField("Приоритет");
 
         patientNameField.addValueChangeListener(e ->{
             if (patientNameField.getValue().length() > 0) {
@@ -384,15 +352,42 @@ public class PrescriptionService {
             if(areFilterValuesValid()) {
                 if (patientNameField.getValue().length() > 0) {
                     patientNameInFilter = patientNameField.getValue();
-                    interactWithTable("showByPatient");
+                    try {
+                        interactWithTable("showByPatient");
+                    }
+                    catch (EmptyPrescriptionCollection exception){
+                        Window alertWindow = new Window("Error");
+                        alertWindow.setModal(true);
+                        alertWindow.setResizable(false);
+                        alertWindow.setContent(new Label(exception.getMessage()));
+                        UI.getCurrent().addWindow(alertWindow);
+                    }
                 }
                 if (descriptionField.getValue().length() > 0) {
                     descriptionInFilter = descriptionField.getValue();
-                    interactWithTable("showByDescription");
+                    try {
+                        interactWithTable("showByDescription");
+                    }
+                    catch (EmptyPrescriptionCollection exception){
+                        Window alertWindow = new Window("Error");
+                        alertWindow.setModal(true);
+                        alertWindow.setResizable(false);
+                        alertWindow.setContent(new Label(exception.getMessage()));
+                        UI.getCurrent().addWindow(alertWindow);
+                    }
                 }
                 if (priorityField.getValue().length() > 0) {
                     priorityInFilter = priorityField.getValue().toUpperCase();
-                    interactWithTable("showByPriority");
+                    try {
+                        interactWithTable("showByPriority");
+                    }
+                    catch (EmptyPrescriptionCollection exception){
+                        Window alertWindow = new Window("Error");
+                        alertWindow.setModal(true);
+                        alertWindow.setResizable(false);
+                        alertWindow.setContent(new Label(exception.getMessage()));
+                        UI.getCurrent().addWindow(alertWindow);
+                    }
                 }
             }
         });
@@ -422,5 +417,72 @@ public class PrescriptionService {
 
     private boolean areFilterValuesValid(){
         return isValidFilterPriority && isValidFilterDescription && isValidFilterPatientName;
+    }
+
+    private void toBuildModalWindow(){
+        UI.getCurrent().removeWindow(window);
+        windowLayout.removeAllComponents();
+        window.setWidthFull();
+        window.setHeight("600");
+        window.setClosable(false);
+        Label descriptionLabel = new Label("Описание должно содержать от 5-ти до 30-ти любых символов");
+        Label expirationLabel = new Label("Это поле должно содержать число от 1 до 99");
+        Label priorityLabel = new Label("Приоритет должен быть один из следующих: CITO, NORMAL, STATIM");
+        descriptionLabel.setVisible(false);
+        expirationLabel.setVisible(false);
+        priorityLabel.setVisible(false);
+
+        windowLayout.addComponent(description);
+        description.addValueChangeListener(e ->{
+            isValidDescription = stringValidator.isValidDescription(description.getValue());
+            if(!isValidDescription){
+                descriptionLabel.setVisible(true);
+            }
+            else{
+                descriptionLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(descriptionLabel);
+
+        windowLayout.addComponent(expirationPeriod);
+        expirationPeriod.addValueChangeListener(e ->{
+            isValidExpirationPeriod = stringValidator.isValidDatePeriod(expirationPeriod.getValue());
+            if(!isValidExpirationPeriod){
+                expirationLabel.setVisible(true);
+            }
+            else{
+                expirationLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(expirationLabel);
+
+        windowLayout.addComponent(getDoctorsList());
+        windowLayout.addComponent(getPatientsList());
+
+        windowLayout.addComponent(priority);
+        priority.addValueChangeListener(e ->{
+            isValidPriority = stringValidator.isValidPriority(priority.getValue().toUpperCase());
+            if(!isValidPriority){
+                priorityLabel.setVisible(true);
+            }
+            else{
+                priorityLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(priorityLabel);
+
+        windowLayout.addComponent(getCancelButton());
+
+        window.setContent(windowLayout);
+        window.setModal(true);
+        UI.getCurrent().addWindow(window);
+    }
+
+    private Button getBackButton(){
+        Button backButton = new Button("Назад");
+        backButton.addClickListener(e ->{
+            MainUI.ui.constructInitialLayout();
+        });
+        return backButton;
     }
 }

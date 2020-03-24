@@ -2,6 +2,7 @@ package com.haulmont.testtask.dao;
 
 import com.haulmont.testtask.entity.Doctor;
 
+import java.sql.Date;
 import java.util.List;
 
 public interface DoctorDAO {
@@ -17,4 +18,8 @@ public interface DoctorDAO {
     void deleteDoctor(Doctor doctor);
 
     List<String> buildStatistics();
+
+    List<Date> datesList();
+
+    Integer getPrescriptionCountByDoctorAndDate(Long id, Date date);
 }
