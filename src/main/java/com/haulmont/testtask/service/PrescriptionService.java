@@ -125,14 +125,14 @@ public class PrescriptionService {
     private Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
-            toBuildModalWindow();
-            windowLayout.addComponent(getConfirmEditButton());
             description.setValue(prescription.getDescription());
             patientName.setValue(prescription.getPatientFullName());
             doctorsName.setValue(prescription.getDoctorFullName());
             priority.setValue(prescription.getPriority().toString());
             creationDate.setValue(prescription.getCreationDate().toString());
             expirationPeriod.setValue(String.valueOf(prescription.getExpirationPeriod()));
+            toBuildModalWindow();
+            windowLayout.addComponent(getConfirmEditButton());
         });
         return editButton;
     }
@@ -211,6 +211,12 @@ public class PrescriptionService {
         doctors = new Grid<>(Doctor.class);
         List<Doctor> doctorsList = prescriptionDAO.getDoctorList();
 
+        for (int i = 0; i < doctorsList.size(); i++){
+            if(prescription.getDoctor().getId().equals(doctorsList.get(i).getId())){
+                prescription.setDoctor(doctorsList.get(i));
+            }
+        }
+
         doctors.getColumn("id").setHidden(true);
         doctors.setColumnOrder("name", "surname", "patronymic", "specialization");
         doctors.getColumn("name").setCaption("Имя");
@@ -239,6 +245,12 @@ public class PrescriptionService {
     private Grid<Patient> getPatientsList(){
         patients = new Grid<>(Patient.class);
         List<Patient> patientsList = prescriptionDAO.getPatientList();
+
+        for (int i = 0; i < patientsList.size(); i++){
+            if(prescription.getPatient().getId().equals(patientsList.get(i).getId())){
+                prescription.setPatient(patientsList.get(i));
+            }
+        }
 
         patients.getColumn("id").setHidden(true);
         patients.setColumnOrder("name", "surname", "patronymic", "phoneNumber");
@@ -270,8 +282,8 @@ public class PrescriptionService {
     private Panel getFilterPanel(){
         Panel panel = new Panel("Фильтр");
 
-        Label patientLabel = new Label("Имя должно содержать от 3-ех до 15-ти букв");
-        Label descriptionLabel = new Label("Описание должно содержать от 5-ти до 30-ти любых символов");
+        Label patientLabel = new Label("Имя должно содержать от 1-го до 15-ти букв");
+        Label descriptionLabel = new Label("Описание должно содержать от 1-го до 30-ти любых символов");
         Label priorityLabel = new Label("Приоритет должен быть один из следующих: CITO, NORMAL, STATIM");
         patientLabel.setVisible(false);
         descriptionLabel.setVisible(false);
@@ -389,6 +401,9 @@ public class PrescriptionService {
                         UI.getCurrent().addWindow(alertWindow);
                     }
                 }
+                patientNameInFilter = "";
+                descriptionInFilter = "";
+                priorityInFilter = "";
             }
         });
         clearFilterButton.addClickListener(e ->{
@@ -425,7 +440,7 @@ public class PrescriptionService {
         window.setWidthFull();
         window.setHeight("600");
         window.setClosable(false);
-        Label descriptionLabel = new Label("Описание должно содержать от 5-ти до 30-ти любых символов");
+        Label descriptionLabel = new Label("Описание должно содержать от 1-го до 30-ти любых символов");
         Label expirationLabel = new Label("Это поле должно содержать число от 1 до 99");
         Label priorityLabel = new Label("Приоритет должен быть один из следующих: CITO, NORMAL, STATIM");
         descriptionLabel.setVisible(false);

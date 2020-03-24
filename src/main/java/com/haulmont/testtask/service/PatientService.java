@@ -173,9 +173,9 @@ public class PatientService {
         windowLayout.removeAllComponents();
         window.setWidthFull();
         window.setClosable(false);
-        Label nameLabel = new Label("Имя должно содержать от 3-ех до 15-ти букв");
-        Label surnameLabel = new Label("Фамилия должно содержать от 3-ех до 15-ти букв");
-        Label patronymicLabel = new Label("Отчество должно содержать от 3-ех до 15-ти букв");
+        Label nameLabel = new Label("Имя должно содержать от 1-го до 15-ти букв");
+        Label surnameLabel = new Label("Фамилия должно содержать от 1-го до 15-ти букв");
+        Label patronymicLabel = new Label("Отчество должно содержать от 1-го до 15-ти букв");
         Label phoneNumberLabel = new Label("Номер телефона должен содержать ровно 6 цифр");
         nameLabel.setVisible(false);
         surnameLabel.setVisible(false);

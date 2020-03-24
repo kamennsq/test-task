@@ -216,10 +216,10 @@ public class DoctorService {
         windowLayout.removeAllComponents();
         window.setWidthFull();
         window.setClosable(false);
-        Label nameLabel = new Label("Имя должно содержать от 3-ех до 15-ти букв");
-        Label surnameLabel = new Label("Фамилия должно содержать от 3-ех до 15-ти букв");
-        Label patronymicLabel = new Label("Отчество должно содержать от 3-ех до 15-ти букв");
-        Label specializationLabel = new Label("Специальность должно содержать от 3-ех до 15-ти букв");
+        Label nameLabel = new Label("Имя должно содержать от 1-го до 15-ти букв");
+        Label surnameLabel = new Label("Фамилия должно содержать от 1-го до 15-ти букв");
+        Label patronymicLabel = new Label("Отчество должно содержать от 1-го до 15-ти букв");
+        Label specializationLabel = new Label("Специальность должно содержать от 1-го до 15-ти букв");
         nameLabel.setVisible(false);
         surnameLabel.setVisible(false);
         patronymicLabel.setVisible(false);
