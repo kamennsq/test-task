@@ -162,13 +162,20 @@ public class DoctorService {
         backToLayout.addClickListener(e ->{
             constructLayoutComponents();
         });
+
         statistics.addComponent(new Label("Doctor/Date"),0,0);
-        for (int i = 0; i < dateList.size(); i++){
-            statistics.addComponent(new Label(dateList.get(i).toString()), i+1, 0);
-        }
         for (int i = 0; i < doctorList.size(); i++){
-            statistics.addComponent(new Label(doctorList.get(i).getName()), 0, i+1);
+            statistics.addComponent(new Label(doctorList.get(i).getName()), 0, i + 1);
+            for (int y = 0; y < dateList.size(); y++){
+                if(statistics.getComponent(y + 1, 0) == null) {
+                    statistics.addComponent(new Label(dateList.get(y).toString()), y + 1, 0);
+                }
+                statistics.addComponent(new Label(doctorDAO.getPrescriptionCountByDoctorAndDate(doctorList.get(i).getId(), dateList.get(y)).toString()), y + 1, i + 1);
+            }
         }
+
+        statistics.setSizeFull();
+
         layout.removeAllComponents();
         layout.addComponent(statistics);
         layout.addComponent(backToLayout);

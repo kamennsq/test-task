@@ -160,4 +160,23 @@ public class DoctorDAOImpl implements DoctorDAO {
         }
     }
 
+    @Override
+    public Integer getPrescriptionCountByDoctorAndDate(Long id, Date date) {
+        try{
+            PreparedStatement ps = MyConnection.connection.prepareStatement("select count(Id) as result from Prescription where " +
+                    "Doctor = ? " +
+                    "and CreationDate = ?");
+            ps.setLong(1, id);
+            ps.setDate(2, date);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt("result");
+        }
+        catch (SQLException e){
+            //throw new ImpossibleToPerformOperation();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

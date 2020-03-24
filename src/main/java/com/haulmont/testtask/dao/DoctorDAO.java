@@ -20,4 +20,6 @@ public interface DoctorDAO {
     List<String> buildStatistics();
 
     List<Date> datesList();
+
+    Integer getPrescriptionCountByDoctorAndDate(Long id, Date date);
 }
