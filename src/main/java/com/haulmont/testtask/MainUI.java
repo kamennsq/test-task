@@ -11,45 +11,50 @@ import com.vaadin.ui.themes.ValoTheme;
 
 @Theme(ValoTheme.THEME_NAME)
 public class MainUI extends UI {
+    public static MainUI ui;
+    VerticalLayout layout = new VerticalLayout();
+    Button doctorsButton = new Button("Доктора");
+    Button patientButton = new Button("Пациенты");
+    Button prescriptionButton = new Button("Рецепты");
 
     @Override
     protected void init(VaadinRequest request) {
         MyConnection connection = new MyConnection();
+        ui = this;
 
         DoctorService doctorService = new DoctorService();
         PatientService patientService = new PatientService();
         PrescriptionService prescriptionService = new PrescriptionService();
 
-        VerticalLayout layout = new VerticalLayout();
         layout.setMargin(true);
 
-        Button doctorsButton = new Button("Doctors");
         doctorsButton.addClickListener(e -> {
             layout.removeAllComponents();
             rebuild(doctorService.getDoctorsLayout());
         });
 
-        Button patientButton = new Button("Patients");
         patientButton.addClickListener(e -> {
             layout.removeAllComponents();
             rebuild(patientService.getPatientsLayout());
         });
 
-        Button prescriptionButton = new Button("Prescriptions");
         prescriptionButton.addClickListener(e -> {
             layout.removeAllComponents();
             rebuild(prescriptionService.getPrescriptionsLayout());
         });
 
-        layout.addComponent(doctorsButton);
-        layout.addComponent(patientButton);
-        layout.addComponent(prescriptionButton);
-
-        rebuild(layout);
+        constructInitialLayout();
     }
 
     protected void rebuild(Layout layout){
         setContent(layout);
     }
 
+    public void constructInitialLayout(){
+        layout.addComponent(doctorsButton);
+        layout.addComponent(patientButton);
+        layout.addComponent(prescriptionButton);
+
+        rebuild(layout);
+    }
 }

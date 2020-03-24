@@ -11,9 +11,9 @@ insert into Doctor values (6, 'Анна', 'Анина', 'Олеговна', 'Л�
 insert into Prescription values (7, 'Болеутоляющее', 1, 4, 'NORMAL', to_date('20.03.20', 'DD.MM.YY'), 12);
 insert into Prescription values (8, 'Болеутоляющее', 2, 4, 'CITO', sysdate, 4);
 insert into Prescription values (9, 'Болеутоляющее', 3, 4, 'STATIM', sysdate, 1);
-insert into Prescription values (10, 'Болеутоляющее', 1, 5, 'NORMAL', to_date('21.03.20', 'DD.MM.YY'), 12);
-insert into Prescription values (11, 'Болеутоляющее', 2, 5, 'CITO', sysdate, 3);
-insert into Prescription values (12, 'Болеутоляющее', 3, 5, 'STATIM', sysdate, 2);
-insert into Prescription values (13, 'Болеутоляющее', 1, 6, 'NORMAL', sysdate, 12);
-insert into Prescription values (14, 'Болеутоляющее', 2, 6, 'CITO', sysdate, 3);
-insert into Prescription values (15, 'Болеутоляющее', 3, 6, 'STATIM', sysdate, 2)
+insert into Prescription values (10, 'От боли в горле', 1, 5, 'NORMAL', to_date('21.03.20', 'DD.MM.YY'), 12);
+insert into Prescription values (11, 'От кашля - 50мг в день', 2, 5, 'CITO', sysdate, 3);
+insert into Prescription values (12, 'От изжоги', 3, 5, 'STATIM', sysdate, 2);
+insert into Prescription values (13, 'Капли в уши', 1, 6, 'NORMAL', sysdate, 12);
+insert into Prescription values (14, 'Спрей в горло - 2 раза в день', 2, 6, 'CITO', sysdate, 3);
+insert into Prescription values (15, 'От насморка', 3, 6, 'STATIM', sysdate, 2)
