@@ -1,6 +1,5 @@
 package com.haulmont.testtask.service;
 
-import com.haulmont.testtask.MainUI;
 import com.haulmont.testtask.dao.PrescriptionDAO;
 import com.haulmont.testtask.dao.impl.PrescriptionDAOImpl;
 import com.haulmont.testtask.entity.Doctor;
@@ -8,16 +7,15 @@ import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
 import com.haulmont.testtask.entity.Priority;
 import com.haulmont.testtask.exception.prescription.EmptyPrescriptionCollection;
+import com.haulmont.testtask.service.basic.AbstractService;
 import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrescriptionService {
-    private VerticalLayout layout = new VerticalLayout();
+public class PrescriptionService extends AbstractService {
     private Window window = new Window("Пожалуйста, заполните поля для создания/редактирования Рецепта");
-    private VerticalLayout windowLayout = new VerticalLayout();
 
     private PrescriptionDAO prescriptionDAO = new PrescriptionDAOImpl();
 
@@ -57,7 +55,7 @@ public class PrescriptionService {
         return layout;
     }
 
-    private Grid<Prescription> getGrid(){
+    protected Grid<Prescription> getGrid(){
         List<Prescription> prescriptions;
 
         if(filteredList.isEmpty()){
@@ -97,32 +95,7 @@ public class PrescriptionService {
         return grid;
     }
 
-    private Button getCreateButton(){
-        Button createButton = new Button("Создать");
-        createButton.addClickListener(e ->{
-            toBuildModalWindow();
-            windowLayout.addComponent(getConfirmCreationButton());
-        });
-        return createButton;
-    }
-
-    private Button getConfirmCreationButton(){
-        Button confirmCreation = new Button("ОК");
-        confirmCreation.addClickListener(e ->{
-            if(areValuesValid()){
-                interactWithTable("insert");
-            }
-        });
-        return confirmCreation;
-    }
-
-    private Button getCancelButton(){
-        Button cancelButton = new Button("Отмена");
-        cancelButton.addClickListener(e -> constructLayoutComponents());
-        return cancelButton;
-    }
-
-    private Button getEditButton(){
+    protected Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
             description.setValue(prescription.getDescription());
@@ -137,17 +110,7 @@ public class PrescriptionService {
         return editButton;
     }
 
-    private Button getConfirmEditButton(){
-        Button button = new Button("ОК");
-        button.addClickListener(e ->{
-            if(areValuesValid()){
-                interactWithTable("update");
-            }
-        });
-        return button;
-    }
-
-    private void interactWithTable(String action){
+    protected void interactWithTable(String action){
         Prescription prescription = new Prescription();
         switch (action){
             case "delete" : prescription.setId(this.prescription.getId());
@@ -178,14 +141,7 @@ public class PrescriptionService {
         constructLayoutComponents();
     }
 
-    private Button getDeleteButton(){
-        deleteButton = new Button("Удалить");
-        deleteButton.setEnabled(false);
-        deleteButton.addClickListener(e -> interactWithTable("delete"));
-        return deleteButton;
-    }
-
-    private void constructLayoutComponents(){
+    protected void constructLayoutComponents(){
         description.clear();
         doctorsName.clear();
         patientName.clear();
@@ -201,10 +157,74 @@ public class PrescriptionService {
         layout.addComponent(getGrid());
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
-        layout.addComponent(getDeleteButton());
+        deleteButton = getDeleteButton();
+        layout.addComponent(deleteButton);
         layout.addComponentAsFirst(getFilterPanel());
         layout.addComponent(getBackButton());
         UI.getCurrent().removeWindow(window);
+    }
+
+    protected boolean areValuesValid(){
+        return isValidPriority && isValidExpirationPeriod && isValidDescription;
+    }
+
+    protected void toBuildModalWindow(){
+        UI.getCurrent().removeWindow(window);
+        windowLayout.removeAllComponents();
+        window.setWidthFull();
+        window.setHeight("600");
+        window.setClosable(false);
+        Label descriptionLabel = new Label("Описание должно содержать от 1-го до 30-ти любых символов");
+        Label expirationLabel = new Label("Это поле должно содержать число от 1 до 99");
+        Label priorityLabel = new Label("Приоритет должен быть один из следующих: CITO, NORMAL, STATIM");
+        descriptionLabel.setVisible(false);
+        expirationLabel.setVisible(false);
+        priorityLabel.setVisible(false);
+
+        windowLayout.addComponent(description);
+        description.addValueChangeListener(e ->{
+            isValidDescription = stringValidator.isValidDescription(description.getValue());
+            if(!isValidDescription){
+                descriptionLabel.setVisible(true);
+            }
+            else{
+                descriptionLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(descriptionLabel);
+
+        windowLayout.addComponent(expirationPeriod);
+        expirationPeriod.addValueChangeListener(e ->{
+            isValidExpirationPeriod = stringValidator.isValidDatePeriod(expirationPeriod.getValue());
+            if(!isValidExpirationPeriod){
+                expirationLabel.setVisible(true);
+            }
+            else{
+                expirationLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(expirationLabel);
+
+        windowLayout.addComponent(getDoctorsList());
+        windowLayout.addComponent(getPatientsList());
+
+        windowLayout.addComponent(priority);
+        priority.addValueChangeListener(e ->{
+            isValidPriority = stringValidator.isValidPriority(priority.getValue().toUpperCase());
+            if(!isValidPriority){
+                priorityLabel.setVisible(true);
+            }
+            else{
+                priorityLabel.setVisible(false);
+            }
+        });
+        windowLayout.addComponent(priorityLabel);
+
+        windowLayout.addComponent(getCancelButton());
+
+        window.setContent(windowLayout);
+        window.setModal(true);
+        UI.getCurrent().addWindow(window);
     }
 
     private Grid<Doctor> getDoctorsList(){
@@ -426,78 +446,8 @@ public class PrescriptionService {
         return panel;
     }
 
-    private boolean areValuesValid(){
-        return isValidPriority && isValidExpirationPeriod && isValidDescription;
-    }
-
     private boolean areFilterValuesValid(){
         return isValidFilterPriority && isValidFilterDescription && isValidFilterPatientName;
     }
 
-    private void toBuildModalWindow(){
-        UI.getCurrent().removeWindow(window);
-        windowLayout.removeAllComponents();
-        window.setWidthFull();
-        window.setHeight("600");
-        window.setClosable(false);
-        Label descriptionLabel = new Label("Описание должно содержать от 1-го до 30-ти любых символов");
-        Label expirationLabel = new Label("Это поле должно содержать число от 1 до 99");
-        Label priorityLabel = new Label("Приоритет должен быть один из следующих: CITO, NORMAL, STATIM");
-        descriptionLabel.setVisible(false);
-        expirationLabel.setVisible(false);
-        priorityLabel.setVisible(false);
-
-        windowLayout.addComponent(description);
-        description.addValueChangeListener(e ->{
-            isValidDescription = stringValidator.isValidDescription(description.getValue());
-            if(!isValidDescription){
-                descriptionLabel.setVisible(true);
-            }
-            else{
-                descriptionLabel.setVisible(false);
-            }
-        });
-        windowLayout.addComponent(descriptionLabel);
-
-        windowLayout.addComponent(expirationPeriod);
-        expirationPeriod.addValueChangeListener(e ->{
-            isValidExpirationPeriod = stringValidator.isValidDatePeriod(expirationPeriod.getValue());
-            if(!isValidExpirationPeriod){
-                expirationLabel.setVisible(true);
-            }
-            else{
-                expirationLabel.setVisible(false);
-            }
-        });
-        windowLayout.addComponent(expirationLabel);
-
-        windowLayout.addComponent(getDoctorsList());
-        windowLayout.addComponent(getPatientsList());
-
-        windowLayout.addComponent(priority);
-        priority.addValueChangeListener(e ->{
-            isValidPriority = stringValidator.isValidPriority(priority.getValue().toUpperCase());
-            if(!isValidPriority){
-                priorityLabel.setVisible(true);
-            }
-            else{
-                priorityLabel.setVisible(false);
-            }
-        });
-        windowLayout.addComponent(priorityLabel);
-
-        windowLayout.addComponent(getCancelButton());
-
-        window.setContent(windowLayout);
-        window.setModal(true);
-        UI.getCurrent().addWindow(window);
-    }
-
-    private Button getBackButton(){
-        Button backButton = new Button("Назад");
-        backButton.addClickListener(e ->{
-            MainUI.ui.constructInitialLayout();
-        });
-        return backButton;
-    }
 }

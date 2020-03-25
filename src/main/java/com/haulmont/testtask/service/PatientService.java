@@ -1,19 +1,16 @@
 package com.haulmont.testtask.service;
 
-import com.haulmont.testtask.MainUI;
 import com.haulmont.testtask.dao.PatientDAO;
 import com.haulmont.testtask.dao.impl.PatientDAOImpl;
 import com.haulmont.testtask.entity.Patient;
-import com.haulmont.testtask.exception.patient.ImpossibleToDeletePatient;
+import com.haulmont.testtask.service.basic.AbstractService;
 import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 
 import java.util.List;
 
-public class PatientService {
-    private VerticalLayout layout = new VerticalLayout();
+public class PatientService extends AbstractService {
     private Window window = new Window("Пожалуйста, заполните поля для создания/редактирования Пациента");
-    private VerticalLayout windowLayout = new VerticalLayout();
 
     private PatientDAO patientDAO = new PatientDAOImpl();
 
@@ -38,7 +35,7 @@ public class PatientService {
         return layout;
     }
 
-    private Grid<Patient> getGrid(){
+    protected Grid<Patient> getGrid(){
         List<Patient> patients = patientDAO.getPatients();
 
         Grid<Patient> grid = new Grid(Patient.class);
@@ -64,34 +61,7 @@ public class PatientService {
         return grid;
     }
 
-    private Button getCreateButton(){
-        Button createButton = new Button("Создать");
-        createButton.addClickListener(e ->{
-            toBuildModalWindow();
-            windowLayout.addComponent(getConfirmCreationButton());
-        });
-        return createButton;
-    }
-
-    private Button getConfirmCreationButton(){
-        Button confirmCreation = new Button("ОК");
-        confirmCreation.addClickListener(e ->{
-            if (areValuesValid()){
-                interactWithTable("insert");
-            }
-        });
-        return confirmCreation;
-    }
-
-    private Button getCancelButton(){
-        Button cancelButton = new Button("Отмена");
-        cancelButton.addClickListener(e ->{
-            constructLayoutComponents();
-        });
-        return cancelButton;
-    }
-
-    private Button getEditButton(){
+    protected Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
             toBuildModalWindow();
@@ -104,17 +74,7 @@ public class PatientService {
         return editButton;
     }
 
-    private Button getConfirmEditButton(){
-        Button button = new Button("ОК");
-        button.addClickListener(e ->{
-            if(areValuesValid()){
-                interactWithTable("update");
-            }
-        });
-        return button;
-    }
-
-    private void interactWithTable(String action){
+    protected void interactWithTable(String action){
         Patient patient = new Patient();
         patient.setName(name.getValue());
         patient.setSurname(surname.getValue());
@@ -131,25 +91,7 @@ public class PatientService {
         constructLayoutComponents();
     }
 
-    private Button getDeleteButton(){
-        deleteButton = new Button("Удалить");
-        deleteButton.setEnabled(false);
-        deleteButton.addClickListener(e -> {
-            try {
-                interactWithTable("delete");
-            }
-            catch (ImpossibleToDeletePatient exception){
-                Window alertWindow = new Window("Error");
-                alertWindow.setModal(true);
-                alertWindow.setResizable(false);
-                alertWindow.setContent(new Label(exception.getMessage()));
-                UI.getCurrent().addWindow(alertWindow);
-            }
-        });
-        return deleteButton;
-    }
-
-    private void constructLayoutComponents(){
+    protected void constructLayoutComponents(){
         name.clear();
         surname.clear();
         patronymic.clear();
@@ -159,16 +101,17 @@ public class PatientService {
         layout.addComponent(getGrid());
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
-        layout.addComponent(getDeleteButton());
+        deleteButton = getDeleteButton();
+        layout.addComponent(deleteButton);
         layout.addComponent(getBackButton());
         UI.getCurrent().removeWindow(window);
     }
 
-    private boolean areValuesValid(){
+    protected boolean areValuesValid(){
         return isNameValid && isSurnameValid && isPatronymicValid && isPhoneNumberValid;
     }
 
-    private void toBuildModalWindow(){
+    protected void toBuildModalWindow(){
         UI.getCurrent().removeWindow(window);
         windowLayout.removeAllComponents();
         window.setWidthFull();
@@ -237,11 +180,4 @@ public class PatientService {
         UI.getCurrent().addWindow(window);
     }
 
-    private Button getBackButton(){
-        Button backButton = new Button("Назад");
-        backButton.addClickListener(e ->{
-            MainUI.ui.constructInitialLayout();
-        });
-        return backButton;
-    }
 }

@@ -1,10 +1,9 @@
 package com.haulmont.testtask.service;
 
-import com.haulmont.testtask.MainUI;
 import com.haulmont.testtask.dao.DoctorDAO;
 import com.haulmont.testtask.dao.impl.DoctorDAOImpl;
 import com.haulmont.testtask.entity.Doctor;
-import com.haulmont.testtask.exception.doctor.ImpossibleToDeleteDoctor;
+import com.haulmont.testtask.service.basic.AbstractService;
 import com.haulmont.testtask.validation.SimpleStringValidator;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Button;
@@ -17,10 +16,8 @@ import java.sql.Date;
 import java.util.List;
 
 
-public class DoctorService {
-    private VerticalLayout layout = new VerticalLayout();
+public class DoctorService extends AbstractService {
     private Window window = new Window("Пожалуйста, заполните поля для создания/редактирования Доктора");
-    private VerticalLayout windowLayout = new VerticalLayout();
 
     private DoctorDAO doctorDAO = new DoctorDAOImpl();
 
@@ -46,7 +43,7 @@ public class DoctorService {
         return layout;
     }
 
-    private Grid<Doctor> getGrid(){
+    protected Grid<Doctor> getGrid(){
         List<Doctor> doctors = doctorDAO.getDoctors();
 
         Grid<Doctor> grid = new Grid<>(Doctor.class);
@@ -72,34 +69,7 @@ public class DoctorService {
         return grid;
     }
 
-    private Button getCreateButton(){
-        Button createButton = new Button("Создать");
-        createButton.addClickListener(e ->{
-            toBuildModalWindow();
-            windowLayout.addComponent(getConfirmCreationButton());
-        });
-        return createButton;
-    }
-
-    private Button getConfirmCreationButton(){
-        Button confirmCreation = new Button("ОК");
-        confirmCreation.addClickListener(e ->{
-            if(areValuesValid()){
-                interactWithTable("insert");
-            }
-        });
-        return confirmCreation;
-    }
-
-    private Button getCancelButton(){
-        Button cancelButton = new Button("Отмена");
-        cancelButton.addClickListener(e ->{
-            constructLayoutComponents();
-        });
-        return cancelButton;
-    }
-
-    private Button getEditButton(){
+    protected Button getEditButton(){
         editButton.setEnabled(false);
         editButton.addClickListener(e ->{
             toBuildModalWindow();
@@ -112,17 +82,7 @@ public class DoctorService {
         return editButton;
     }
 
-    private Button getConfirmEditButton(){
-        Button button = new Button("ОК");
-        button.addClickListener(e ->{
-            if(areValuesValid()){
-                interactWithTable("update");
-            }
-        });
-        return button;
-    }
-
-    private void interactWithTable(String action){
+    protected void interactWithTable(String action){
         Doctor doctor = new Doctor();
         doctor.setName(name.getValue());
         doctor.setSurname(surname.getValue());
@@ -139,59 +99,7 @@ public class DoctorService {
         constructLayoutComponents();
     }
 
-    private Button getDeleteButton(){
-        deleteButton = new Button("Удалить");
-        deleteButton.setEnabled(false);
-        deleteButton.addClickListener(e -> {
-            try {
-                interactWithTable("delete");
-            }
-            catch (ImpossibleToDeleteDoctor exception){
-                Window alertWindow = new Window("Error");
-                alertWindow.setModal(true);
-                alertWindow.setResizable(false);
-                alertWindow.setContent(new Label(exception.getMessage()));
-                UI.getCurrent().addWindow(alertWindow);
-            }
-        });
-        return deleteButton;
-    }
-
-    private Button getStatisticButton(){
-        statisticButton.addClickListener(e ->{
-            toBuildStatistics();
-        });
-        return statisticButton;
-    }
-
-    private void toBuildStatistics(){
-        Button backToLayout = new Button("Назад");
-        List<Date> dateList = doctorDAO.datesList();
-        List<Doctor> doctorList = doctorDAO.getDoctors();
-        GridLayout statistics = new GridLayout(dateList.size()+1, doctorList.size()+1);
-        backToLayout.addClickListener(e ->{
-            constructLayoutComponents();
-        });
-
-        statistics.addComponent(new Label("Имя доктора/Дата"),0,0);
-        for (int i = 0; i < doctorList.size(); i++){
-            statistics.addComponent(new Label(doctorList.get(i).getName()), 0, i + 1);
-            for (int y = 0; y < dateList.size(); y++){
-                if(statistics.getComponent(y + 1, 0) == null) {
-                    statistics.addComponent(new Label(dateList.get(y).toString()), y + 1, 0);
-                }
-                statistics.addComponent(new Label(doctorDAO.getPrescriptionCountByDoctorAndDate(doctorList.get(i).getId(), dateList.get(y)).toString()), y + 1, i + 1);
-            }
-        }
-
-        statistics.setSizeFull();
-
-        layout.removeAllComponents();
-        layout.addComponent(statistics);
-        layout.addComponent(backToLayout);
-    }
-
-    private void constructLayoutComponents(){
+    protected void constructLayoutComponents(){
         name.clear();
         surname.clear();
         patronymic.clear();
@@ -201,17 +109,18 @@ public class DoctorService {
         layout.addComponent(getGrid());
         layout.addComponent(getCreateButton());
         layout.addComponent(getEditButton());
-        layout.addComponent(getDeleteButton());
+        deleteButton = getDeleteButton();
+        layout.addComponent(deleteButton);
         layout.addComponent(getStatisticButton());
         layout.addComponent(getBackButton());
         UI.getCurrent().removeWindow(window);
     }
 
-    private boolean areValuesValid(){
+    protected boolean areValuesValid(){
         return isNameValid && isSurnameValid && isPatronymicValid && isSpecializationValid;
     }
 
-    private void toBuildModalWindow(){
+    protected void toBuildModalWindow(){
         UI.getCurrent().removeWindow(window);
         windowLayout.removeAllComponents();
         window.setWidthFull();
@@ -280,11 +189,38 @@ public class DoctorService {
         UI.getCurrent().addWindow(window);
     }
 
-    private Button getBackButton(){
-        Button backButton = new Button("Назад");
-        backButton.addClickListener(e ->{
-            MainUI.ui.constructInitialLayout();
+    private Button getStatisticButton(){
+        statisticButton.addClickListener(e ->{
+            toBuildStatistics();
         });
-        return backButton;
+        return statisticButton;
     }
+
+    private void toBuildStatistics(){
+        Button backToLayout = new Button("Назад");
+        List<Date> dateList = doctorDAO.datesList();
+        List<Doctor> doctorList = doctorDAO.getDoctors();
+        GridLayout statistics = new GridLayout(dateList.size()+1, doctorList.size()+1);
+        backToLayout.addClickListener(e ->{
+            constructLayoutComponents();
+        });
+
+        statistics.addComponent(new Label("Имя доктора/Дата"),0,0);
+        for (int i = 0; i < doctorList.size(); i++){
+            statistics.addComponent(new Label(doctorList.get(i).getName()), 0, i + 1);
+            for (int y = 0; y < dateList.size(); y++){
+                if(statistics.getComponent(y + 1, 0) == null) {
+                    statistics.addComponent(new Label(dateList.get(y).toString()), y + 1, 0);
+                }
+                statistics.addComponent(new Label(doctorDAO.getPrescriptionCountByDoctorAndDate(doctorList.get(i).getId(), dateList.get(y)).toString()), y + 1, i + 1);
+            }
+        }
+
+        statistics.setSizeFull();
+
+        layout.removeAllComponents();
+        layout.addComponent(statistics);
+        layout.addComponent(backToLayout);
+    }
+
 }
